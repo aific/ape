@@ -1,0 +1,10 @@
+*~
+build
+*.xcodeproj
+*.bbprojectd
+.DS_Store
+.#*
+*.swp
+*.cbp
+*.layout
+log
