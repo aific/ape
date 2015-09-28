@@ -27,6 +27,7 @@ TARGET := ape
 # Additional configuration
 #
 
+COMPILER_FLAGS := $(COMPILER_FLAGS) --std=c++11
 RUN_DEV_ARGS :=
 
 

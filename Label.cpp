@@ -115,15 +115,15 @@ std::string Label::FormatLine(size_t& p, size_t maxLine)
 
 		// The token fits
 
-		if (newLength < maxLine) {
+		if (newLength <= maxLine) {
 			s += text.substr(p, tokenLength);
 			switch (sep) {
 				case ' ':
-					if (newLength + 1 < maxLine) s += " ";
+					if (newLength + 1 <= maxLine) s += " ";
 					break;
 				case '\t':
 					size_t x = ((s.length()+tabSize) / tabSize) * tabSize;
-					while (x > s.length() && s.length() < maxLine) {
+					while (x > s.length() && s.length() <= maxLine) {
 						s += " ";
 					}
 					break;

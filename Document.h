@@ -228,7 +228,7 @@ public:
 	 * @return the associated file name, or NULL if none
 	 */
 	inline const char* FileName(void) {
-		register const char* s = fileName.c_str();
+		const char* s = fileName.c_str();
 		return *s == '\0' ? NULL : s;
 	}
 	

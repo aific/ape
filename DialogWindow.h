@@ -35,10 +35,32 @@
 #ifndef __DIALOG_WINDOW_H
 #define __DIALOG_WINDOW_H
 
+#include <vector>
+
 #include "Button.h"
 #include "Events.h"
 #include "Label.h"
 #include "Window.h"
+
+
+/**
+ * Common dialog types
+ */
+enum DialogType
+{
+	DIALOG_TYPE_NORMAL,
+	DIALOG_TYPE_ERROR,
+};
+
+
+/**
+ * Common dialog button types
+ */
+enum DialogButton
+{
+	DIALOG_BUTTON_OK,
+	DIALOG_BUTTON_CANCEL,
+};
 
 
 /**
@@ -88,7 +110,10 @@ public:
 class SimpleDialogWindow : public DialogWindow, protected EventHandler
 {
 	Label* label;
-	Button* button;
+	std::vector<Button*> buttons;
+	std::vector<DialogButton> buttonCodes;
+
+	DialogButton returnCode;
 
 
 public:
@@ -97,15 +122,79 @@ public:
 	 * Create an instance of class SimpleDialogWindow
 	 *
 	 * @param parent the parent window
+	 * @param type the dialog type
 	 * @param title the title
 	 * @param text the text
 	 */
-	SimpleDialogWindow(Window* parent, const char* title, const char* text);
+	SimpleDialogWindow(Window* parent, DialogType type,
+			const char* title, const char* text);
 
 	/**
 	 * Destroy the object
 	 */
 	virtual ~SimpleDialogWindow(void);
+
+	/**
+	 * Display and run the dialog window
+	 *
+	 * @return the clicked button, or DIALOG_BUTTON_CANCEL if the window was
+	 *         closed
+	 */
+	DialogButton Run(void);
+
+
+protected:
+
+	/**
+	 * Initialize the instance
+	 *
+	 * @param type the dialog type
+	 * @param title the title
+	 * @param text the text
+	 * @param dialogButtons the buttons
+	 */
+	void Init(DialogType type, const char* title, const char* text,
+	          const std::vector<DialogButton>& dialogButtons);
+
+	/**
+	 * Get the text of a button
+	 *
+	 * @param button the button code
+	 * @return the text
+	 */
+	const char* ButtonText(DialogButton button);
+
+	/**
+	 * An event handler for an action
+	 *
+	 * @param sender the sender
+	 */
+	virtual void OnAction(Component* sender);
+};
+
+
+/**
+ * A collection of dialogs
+ */
+class Dialogs
+{
+
+public:
+
+	/**
+	 * A simple error dialog
+	 *
+	 * @param parent the parent window
+	 * @param text the text
+	 * @param title the title
+	 */
+	static void Error(Window* parent, const char* text,
+			const char* title="Error")
+	{
+		SimpleDialogWindow* w = new SimpleDialogWindow(parent,
+				DIALOG_TYPE_ERROR, title, text);
+		w->Run();
+	}
 };
 
 #endif

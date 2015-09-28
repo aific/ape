@@ -235,6 +235,14 @@ void EditorWindow::OnKeyPressed(int key)
 		}
 	}
 
+	else if (key == KEY_CTRL('s')) {
+
+		if (editor->Document()->FileName() == NULL) {
+			Dialogs::Error(this, "There is no file associated with the "
+					"document");
+		}
+	}
+
 	else {
 
 		Window::OnKeyPressed(key);

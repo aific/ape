@@ -68,14 +68,53 @@ DialogWindow::~DialogWindow(void)
  * Create an instance of class SimpleDialogWindow
  *
  * @param parent the parent window
+ * @param type the dialog type
  * @param title the title
  * @param text the text
  */
-SimpleDialogWindow::SimpleDialogWindow(Window* parent, const char* title,
-		const char* text)
+SimpleDialogWindow::SimpleDialogWindow(Window* parent, DialogType type,
+		const char* title, const char* text)
 	: DialogWindow(parent, title)
 {
-	int buttonWidth = 8;
+	std::vector<DialogButton> buttons;
+	buttons.push_back(DIALOG_BUTTON_OK);
+	Init(type, title, text, buttons);
+}
+
+
+/**
+ * Destroy the object
+ */
+SimpleDialogWindow::~SimpleDialogWindow(void)
+{
+}
+
+
+/**
+ * Initialize the instance
+ *
+ * @param type the dialog type
+ * @param title the title
+ * @param text the text
+ * @param dialogButtons the buttons
+ */
+void SimpleDialogWindow::Init(DialogType type, const char* title,
+		const char* text, const std::vector<DialogButton>& dialogButtons)
+{
+	buttonCodes = dialogButtons;
+	returnCode = DIALOG_BUTTON_CANCEL;
+
+	switch (type) {
+		case DIALOG_TYPE_ERROR:
+			bg = 1;
+			fg = 7;
+			break;
+		default:
+			break;
+	}
+
+	int buttonMinWidth = 8;
+	int buttonPaddingLR = 1;
 	int buttonSpacing = 2;
 
 	int paddingLR = 4 + (Columns() - ClientColumns());
@@ -92,8 +131,17 @@ SimpleDialogWindow::SimpleDialogWindow(Window* parent, const char* title,
 
 	// Determine the appropriate dialog width and resize accordingly
 
-	size_t numButtons = 1;
-	int minWidth = numButtons * buttonWidth + (numButtons-1) * buttonSpacing;
+	size_t numButtons = dialogButtons.size();
+	int buttonWidth = buttonMinWidth;
+	for (size_t i = 0; i < dialogButtons.size(); i++) {
+		int l = strlen(ButtonText(dialogButtons[i]));
+		if (l + buttonPaddingLR * 2 > buttonWidth) {
+			buttonWidth = l + buttonPaddingLR * 2;
+		}
+	}
+	int buttonAreaWidth = numButtons * buttonWidth
+		+ (numButtons-1) * buttonSpacing;
+	int minWidth = buttonAreaWidth;
 
 	int width = label->MaximumLineLength();
 	if (width > maxWidth) width = maxWidth;
@@ -105,6 +153,7 @@ SimpleDialogWindow::SimpleDialogWindow(Window* parent, const char* title,
 
 	// Center
 
+	Window* parent = DialogParent();
 	if (parent == NULL) {
 		Move((wm.Rows() - Rows()) / 2, (wm.Columns() - Columns()) / 2);
 	}
@@ -116,8 +165,14 @@ SimpleDialogWindow::SimpleDialogWindow(Window* parent, const char* title,
 
 	// Create the buttons
 
-	button = new Button(this, "OK", ClientRows() - 2, 2, buttonWidth,
-			ANCHOR_LEFT | ANCHOR_BOTTOM);
+	int c = (ClientColumns() - buttonAreaWidth) / 2;
+	for (size_t i = 0; i < dialogButtons.size(); i++) {
+		Button* button = new Button(this, ButtonText(dialogButtons[i]),
+				ClientRows() - 2, c, buttonWidth, ANCHOR_LEFT | ANCHOR_BOTTOM);
+		button->RegisterEventHandler(this);
+		buttons.push_back(button);
+		c += buttonWidth + buttonSpacing;
+	}
 
 
 	// Finish
@@ -128,9 +183,54 @@ SimpleDialogWindow::SimpleDialogWindow(Window* parent, const char* title,
 
 
 /**
- * Destroy the object
+ * Get the text of a button
+ *
+ * @param button the button code
+ * @return the text
  */
-SimpleDialogWindow::~SimpleDialogWindow(void)
+const char* SimpleDialogWindow::ButtonText(DialogButton button)
 {
+	switch (button) {
+		case DIALOG_BUTTON_OK     : return "OK";
+		case DIALOG_BUTTON_CANCEL : return "Cancel";
+		default                   : return "???";
+	}
+}
+
+
+/**
+ * Display and run the dialog window
+ *
+ * @return the clicked button, or DIALOG_BUTTON_CANCEL if the window was
+ *         closed
+ */
+DialogButton SimpleDialogWindow::Run(void)
+{
+	returnCode = DIALOG_BUTTON_CANCEL;
+	wm.Add(this);
+
+	while (Mode() != WM_CLOSED) {
+		usleep(20 * 1000);
+		wm.ProcessMessages();
+	}
+
+	return returnCode;
+}
+
+
+/**
+ * An event handler for an action
+ *
+ * @param sender the sender
+ */
+void SimpleDialogWindow::OnAction(Component* sender)
+{
+	for (size_t i = 0; i < buttons.size(); i++) {
+		if (sender == buttons[i]) {
+			returnCode = buttonCodes[i];
+			Close();
+			break;
+		}
+	}
 }
 

@@ -268,6 +268,7 @@ void Manager::Close(Window* w)
 	if (i != windows.end()) {
 
 		w->NotifyInactive();
+		w->wmMode = WM_CLOSED;
 
 		windows.erase(i);
 		zombies.push_back(w);

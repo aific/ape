@@ -91,7 +91,7 @@ double seconds(struct timeval* tim)
 int digits(int num, int base)
 {
 	int d = 1;
-	for (int register n = num; n >= base; n /= base) d++;
+	for (int n = num; n >= base; n /= base) d++;
 	return d;
 }
 

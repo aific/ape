@@ -40,6 +40,7 @@
 #define WM_NORMAL		0
 #define WM_MOVE			1
 #define WM_RESIZE		2
+#define WM_CLOSED		0xDEAD
 
 class Manager;
 class MenuWindow;
@@ -202,7 +203,7 @@ public:
 	/**
 	 * Return action the mode of the window
 	 *
-	 * @return WM_NORMAL, WM_MOVE, or WM_RESIZE
+	 * @return WM_NORMAL, WM_MOVE, or WM_RESIZE (or WM_CLOSED if closed)
 	 */
 	inline int Mode(void) { return wmMode; }
 };
