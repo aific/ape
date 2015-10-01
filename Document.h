@@ -213,14 +213,18 @@ public:
 	 * Save to file
 	 *
 	 * @param file the file name
-	 * @param switchFile whether to set the associated file name and clear the modified flag
+	 * @param switchFile whether to set the associated file name and clear
+	 *                   the modified flag
+	 * @return a ReturnExt
 	 */
-	void SaveToFile(const char* file, bool switchFile=false);
+	ReturnExt SaveToFile(const char* file, bool switchFile=false);
 
 	/**
 	 * Save to the current file
+	 *
+	 * @return a ReturnExt
 	 */
-	void Save(void);
+	ReturnExt Save(void);
 
 	/**
 	 * Get the associated file name

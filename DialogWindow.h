@@ -195,6 +195,27 @@ public:
 				DIALOG_TYPE_ERROR, title, text);
 		w->Run();
 	}
+
+	/**
+	 * A simple error dialog
+	 *
+	 * @param parent the parent window
+	 * @param rext the ReturnExt value
+	 * @param title the title
+	 */
+	static void Error(Window* parent, const ReturnExt& rext,
+			const char* title="Error")
+	{
+		std::string s = rext.Message();
+		if (!rext && rext.ErrorCode() > 0) {
+			s += ": ";
+			s += strerror(rext.ErrorCode());
+		}
+
+		SimpleDialogWindow* w = new SimpleDialogWindow(parent,
+				DIALOG_TYPE_ERROR, title, s.c_str());
+		w->Run();
+	}
 };
 
 #endif

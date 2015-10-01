@@ -167,22 +167,23 @@ void EditorDocument::LoadFromFile(const char* file)
  * Save to file
  *
  * @param file the file name
- * @param switchFile whether to set the associated file name and clear the modified flag
+ * @param switchFile whether to set the associated file name and clear
+ *                   the modified flag
+ * @return a ReturnExt
  */
-void EditorDocument::SaveToFile(const char* file, bool switchFile)
+ReturnExt EditorDocument::SaveToFile(const char* file, bool switchFile)
 {
 	// Open the temporary file
 	
 	char tmp[L_tmpnam];
 	if (tmpnam(tmp) == NULL) {
-		//###
-		abort();
+		return ReturnExt(false, "Cannot generate a name for a new "
+				"temporary file", errno);
 	}
 
 	FILE* f = fopen(tmp, "wt");
 	if (f == NULL) {
-		//###
-		abort();
+		return ReturnExt(false, "Error while saving", errno);
 	}
 
 	int numLines = NumLines();
@@ -191,8 +192,7 @@ void EditorDocument::SaveToFile(const char* file, bool switchFile)
 		if (fputs(l, f) == EOF) {
 			fclose(f);
 			unlink(tmp);
-			//###
-			abort();
+			return ReturnExt(false, "Error while writing", errno);
 		}
 		fputc('\n', f);
 	}
@@ -201,8 +201,7 @@ void EditorDocument::SaveToFile(const char* file, bool switchFile)
 
 	if (rename(tmp, file) != 0) {
 		unlink(tmp);
-		//###
-		abort();
+		return ReturnExt(false, "Error while saving", errno);
 	}
 
 
@@ -223,20 +222,24 @@ void EditorDocument::SaveToFile(const char* file, bool switchFile)
 			currentUndo = NULL;
 		}
 	}
+
+	return ReturnExt(true);
 }
 
 
 /**
  * Save to the current file
+ *
+ * @return a ReturnExt
  */
-void EditorDocument::Save(void)
+ReturnExt EditorDocument::Save(void)
 {
 	if (FileName() == NULL) {
-		//###
-		abort();
+		return ReturnExt(false, "There is no associated file name");
 	}
 
 	SaveToFile(fileName.c_str(), true);
+	return ReturnExt(true);
 }
 
 

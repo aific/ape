@@ -52,6 +52,105 @@ enum log_level_t {
 
 
 /**
+ * A return value
+ */
+class ReturnExt {
+
+	bool success;
+	std::string message;
+	int errorCode;
+
+
+public:
+
+	/**
+	 * Create an instance of ReturnExt
+	 *
+	 * @param success true if this is a success return value
+	 * @param message the message
+	 */
+	ReturnExt(bool success, const char* message = "")
+	{
+		this->success   = success;
+		this->message   = message;
+		this->errorCode = success ? 0 : -1;
+	}
+
+	/**
+	 * Create an instance of ReturnExt
+	 *
+	 * @param success true if this is a success return value
+	 * @param message the message
+	 * @param errorCode the error code
+	 */
+	ReturnExt(bool success, const char* message, int errorCode)
+	{
+		this->success   = success;
+		this->message   = message;
+		this->errorCode = errorCode;
+	}
+
+	/**
+	 * Create an instance of ReturnExt
+	 *
+	 * @param success true if this is a success return value
+	 * @param message the message
+	 */
+	ReturnExt(bool success, const std::string& message)
+	{
+		this->success   = success;
+		this->message   = message;
+		this->errorCode = success ? 0 : -1;
+	}
+
+	/**
+	 * Create an instance of ReturnExt by copying another instance
+	 *
+	 * @param other the other instance
+	 */
+	ReturnExt(const ReturnExt& other)
+	{
+		this->success   = other.success;
+		this->message   = other.message;
+		this->errorCode = other.errorCode;
+	}
+
+	/**
+	 * Destroy an instance of this class
+	 */
+	~ReturnExt(void) {}
+
+	/**
+	 * Return true if this run was a success
+	 *
+	 * @return true if it was a success
+	 */
+	inline explicit operator bool() const { return success; }
+
+	/**
+	 * Return true if this run was a success
+	 *
+	 * @return true if it was a success
+	 */
+	inline bool Success(void) const { return success; }
+
+	/**
+	 * Get the message
+	 *
+	 * @return the message
+	 */
+	inline const char* Message(void) const { return message.c_str(); }
+
+	/**
+	 * Get the numerical error code
+	 *
+	 * @return the error code
+	 */
+	inline int ErrorCode(void) const { return errorCode; }
+};
+
+
+/**
  * Start a timer
  */
 void StartTimer(void);

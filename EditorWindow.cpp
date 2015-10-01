@@ -238,8 +238,13 @@ void EditorWindow::OnKeyPressed(int key)
 	else if (key == KEY_CTRL('s')) {
 
 		if (editor->Document()->FileName() == NULL) {
-			Dialogs::Error(this, "There is no file associated with the "
-					"document");
+			// XXX
+			ReturnExt r = editor->Document()->Save();
+			Dialogs::Error(this, r.Message());
+		}
+		else {
+			ReturnExt r = editor->Document()->Save();
+			if (!r) Dialogs::Error(this, r.Message());
 		}
 	}
 
