@@ -53,6 +53,12 @@ DialogWindow::DialogWindow(Window* parent, const char* title, int row, int col,
 	: Window(title, row, col, rows, cols, 7, 0)
 {
 	parentWindow = parent;
+
+
+	// Most dialog windows should not be resized
+
+	allowResize = false;
+	allowMaximize = false;
 }
 
 
@@ -61,6 +67,23 @@ DialogWindow::DialogWindow(Window* parent, const char* title, int row, int col,
  */
 DialogWindow::~DialogWindow(void)
 {
+}
+
+
+/**
+ * Center the window relative to the parent (or to the screen if there is
+ * no parent)
+ */
+void DialogWindow::Center(void)
+{
+	Window* parent = DialogParent();
+	if (parent == NULL) {
+		Move((wm.Rows() - Rows()) / 2, (wm.Columns() - Columns()) / 2);
+	}
+	else {
+		Move(parent->Row() + (parent->Rows() - Rows()) / 2,
+		     parent->Column() + (parent->Columns() - Columns()) / 2);
+	}
 }
 
 
@@ -151,18 +174,6 @@ void SimpleDialogWindow::Init(DialogType type, const char* title,
 	       width + paddingLR);
 
 
-	// Center
-
-	Window* parent = DialogParent();
-	if (parent == NULL) {
-		Move((wm.Rows() - Rows()) / 2, (wm.Columns() - Columns()) / 2);
-	}
-	else {
-		Move(parent->Row() + (parent->Rows() - Rows()) / 2,
-		     parent->Column() + (parent->Columns() - Columns()) / 2);
-	}
-
-
 	// Create the buttons
 
 	int c = (ClientColumns() - buttonAreaWidth) / 2;
@@ -177,8 +188,7 @@ void SimpleDialogWindow::Init(DialogType type, const char* title,
 
 	// Finish
 
-	allowResize = false;
-	allowMaximize = false;
+	Center();
 }
 
 

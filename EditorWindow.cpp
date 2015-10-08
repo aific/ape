@@ -38,6 +38,7 @@
 #include <libgen.h>
 
 #include "DialogWindow.h"
+#include "FileDialog.h"
 #include "Manager.h"
 #include "ScrollBar.h"
 
@@ -233,6 +234,12 @@ void EditorWindow::OnKeyPressed(int key)
 		if (editor->HighlightPattern() != NULL) {
 			editor->FindNext(true, false);
 		}
+	}
+
+	else if (key == KEY_CTRL('o')) {
+
+		FileDialog* d = new FileDialog(this, FILE_DIALOG_OPEN, "Open");
+		d->Run();
 	}
 
 	else if (key == KEY_CTRL('s')) {

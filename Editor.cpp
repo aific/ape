@@ -146,10 +146,10 @@ void Editor::SetScrollBars(ScrollBar* horiz, ScrollBar* vert)
 	}
 	else {
 		if (horizScroll != NULL) {
-			horizScroll->SetPosition(colStart, Columns() - 2);
+			horizScroll->SetPosition(colStart, Columns()); // was: - 2
 		}
 		if (vertScroll != NULL) {
-			vertScroll->SetPosition(doc->PageStart(), Rows() - 2);
+			vertScroll->SetPosition(doc->PageStart(), Rows()); // was: - 2
 		}
 	}
 }

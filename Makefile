@@ -13,7 +13,8 @@ SOURCES := main.cpp Window.cpp Manager.cpp ASCIITable.cpp ColorTable.cpp \
            MenuWindow.cpp ScrollBar.cpp Editor.cpp Document.cpp Histogram.cpp \
 		   EditAction.cpp util.cpp Component.cpp Container.cpp \
 		   CheckBox.cpp EditorWindow.cpp SplitPane.cpp Label.cpp \
-		   Button.cpp TerminalControl.cpp DialogWindow.cpp
+		   Button.cpp TerminalControl.cpp DialogWindow.cpp FileDialog.cpp \
+		   List.cpp
 
 
 #

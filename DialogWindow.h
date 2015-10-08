@@ -99,6 +99,15 @@ public:
 	 * @return the parent window, or NULL if none
 	 */
 	inline Window* DialogParent(void) { return parentWindow; }
+
+
+protected:
+
+	/**
+	 * Center the window relative to the parent (or to the screen if there is
+	 * no parent)
+	 */
+	void Center(void);
 };
 
 
