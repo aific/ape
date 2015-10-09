@@ -235,6 +235,7 @@ void AbstractList::MoveCursorUp(bool shift)
 		cursor--;
 	}
 	
+	CursorMoved();
 	Paint();
 }
 
@@ -278,6 +279,7 @@ void AbstractList::MoveCursorDown(bool shift)
 		cursor++;
 	}
 	
+	CursorMoved();
 	Paint();
 }
 
@@ -307,6 +309,7 @@ void AbstractList::MoveCursorPageUp(void)
 	
 	if (d < Rows()) {
 		cursor -= Rows() - 1;
+		if (pageStart == 0) cursor = 0;
 		if (cursor < 0) cursor = 0;
 	}
 	else {
@@ -316,6 +319,7 @@ void AbstractList::MoveCursorPageUp(void)
 	
 	// Finish
 	
+	CursorMoved();
 	Paint();
 }
 
@@ -349,6 +353,9 @@ void AbstractList::MoveCursorPageDown(void)
 	if (d < Rows()) {
 		cursor += Rows() - 2;
 		if (d == 0) cursor++;
+		if (pageStart + Rows() == ((int) elements.size())) {
+			cursor = ((int) elements.size()) - 1;
+		}
 		if (cursor > ((int) elements.size()) - 1) {
 			cursor = ((int) elements.size()) - 1;
 		}
@@ -360,6 +367,7 @@ void AbstractList::MoveCursorPageDown(void)
 	
 	// Finish
 	
+	CursorMoved();
 	Paint();
 }
 
@@ -385,9 +393,28 @@ bool AbstractList::EnsureValidScroll(void)
 		int p = ((int) elements.size()) - Rows();
 		if (p < 0) p = 0;
 		pageStart = p;
+		return true;
 	}
 	
 	return false;
+}
+
+
+/**
+ * Perform any necessary actions after moving a cursor
+ */
+void AbstractList::CursorMoved(void)
+{
+	if (scrollBarsReflectCursor) {
+		if (vertScroll != NULL) {
+			vertScroll->SetPosition(cursor);
+		}
+	}
+	else {
+		if (vertScroll != NULL) {
+			vertScroll->SetPosition(pageStart, Rows());
+		}
+	}
 }
 
 
@@ -464,3 +491,4 @@ void AbstractList::OnResize(int oldRows, int oldCols, int newRows, int newCols)
 	Component::OnResize(oldRows, oldCols, newRows, newCols);
 	EnsureValidScroll();
 }
+

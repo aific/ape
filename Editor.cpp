@@ -950,6 +950,7 @@ void Editor::MoveCursorPageUp(void)
 	
 	if (d < Rows()) {
 		row -= Rows() - 1;
+		if (doc->PageStart() == 0) row = 0;
 		if (row < 0) row = 0;
 	}
 	else {
@@ -993,6 +994,9 @@ void Editor::MoveCursorPageDown(void)
 	if (d < Rows()) {
 		row += Rows() - 2;
 		if (d == 0) row++;
+		if (doc->PageStart() + Rows() == doc->NumLines()) {
+			row = doc->NumLines() - 1;
+		}
 		if (row > doc->NumLines() - 1) row = doc->NumLines() - 1;
 	}
 	else {
@@ -1439,6 +1443,7 @@ bool Editor::EnsureValidScroll(void)
 		int p = doc->NumLines() - Rows();
 		if (p < 0) p = 0;
 		doc->SetPageStart(p);
+		return true;
 	}
 	
 	return false;
@@ -1722,4 +1727,5 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
 

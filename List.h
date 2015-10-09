@@ -102,6 +102,11 @@ class AbstractList : public Component
 	 * @return true if the scrolling actually happened
 	 */
 	bool EnsureValidScroll(void);
+
+	/**
+	 * Perform any necessary actions after moving a cursor
+	 */
+	void CursorMoved(void);
 	
 
 protected:
