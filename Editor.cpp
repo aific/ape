@@ -423,7 +423,7 @@ void Editor::PaintLine(int line)
 			int k = ((pos) / tabSize) * tabSize + tabSize;
 			if (k > length + start) k = length + start;
 			if (displayTabs) {
-				tcw->SetColor(bg, 5);
+				tcw->SetColor(bg, 6);
 				tcw->PutChar(ACS_BULLET);
 				//tcw->PutChar(ACS_VLINE);
 				//tcw->PutChar(187 | A_ALTCHARSET);
