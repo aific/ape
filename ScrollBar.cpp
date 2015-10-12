@@ -35,19 +35,19 @@
 #include "stdafx.h"
 #include "ScrollBar.h"
 
-#include "Container.h"
+#include "Component.h"
 #include "Manager.h"
 
 
 /**
  * Create an instance of class ScrollBar
  * 
- * @param _container the parent container
+ * @param _component the parent component
  * @param _horiz whether the scroll bar is horizontal
  */
-ScrollBar::ScrollBar(Container* _container, bool _horiz)
+ScrollBar::ScrollBar(Component* _component, bool _horiz)
 {
-	container = _container;
+	component = _component;
 	horiz = _horiz;
 	
 	min = 0;
@@ -122,7 +122,7 @@ void ScrollBar::SetLength(int len)
  */
 void ScrollBar::Paint(void)
 {
-	TerminalControlWindow* tcw = container->TcwBuffer();
+	TerminalControlWindow* tcw = component->TcwBuffer();
 
 
 	// Calculate the bar position and size

@@ -35,7 +35,7 @@
 #ifndef __SCROLL_BAR_H
 #define __SCROLL_BAR_H
 
-class Container;
+class Component;
 
 
 /**
@@ -45,7 +45,7 @@ class Container;
  */
 class ScrollBar
 {
-	Container* container;
+	Component* component;
 	bool horiz;
 	
 	int min, max;
@@ -62,10 +62,10 @@ public:
 	/**
 	 * Create an instance of class ScrollBar
 	 * 
-	 * @param container the parent container
+	 * @param component the parent component
 	 * @param horiz whether the scroll bar is horizontal
 	 */
-	ScrollBar(Container* container, bool horiz);
+	ScrollBar(Component* component, bool horiz);
 
 	/**
 	 * Destroy the object

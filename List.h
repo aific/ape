@@ -62,6 +62,7 @@ class AbstractList : public Component
 	std::vector<std::string> elements;
 
 	ScrollBar* vertScroll;
+	ScrollBar* internalVertScroll;
 	bool scrollBarsReflectCursor;
 	
 
@@ -88,6 +89,16 @@ class AbstractList : public Component
 	 * Move the cursor one page down
 	 */
 	void MoveCursorPageDown(void);
+	
+	/**
+	 * Move the cursor to the beginning
+	 */
+	void MoveCursorToBeginning(void);
+	
+	/**
+	 * Move the cursor to the end
+	 */
+	void MoveCursorToEnd(void);
 	
 	/**
 	 * Paint an element
@@ -161,7 +172,7 @@ public:
 	 * @param vert the vertical scroll bar
 	 */
 	void SetScrollBar(ScrollBar* vert);
-	
+
 	/**
 	 * Get the cursor position (index into the list)
 	 *
@@ -171,3 +182,4 @@ public:
 };
 
 #endif
+

@@ -59,10 +59,7 @@ AbstractList::AbstractList(Container* parent, int _row, int _col, int rows,
 	cursorBg = 0;
 	cursorFg = 6;
 	selBg = 4;
-	selFg = 0;
-
-	scrollBarsReflectCursor = false;
-	vertScroll = NULL;
+	selFg = 7;
 	
 	
 	// Set the component properties
@@ -85,6 +82,17 @@ AbstractList::AbstractList(Container* parent, int _row, int _col, int rows,
 		std::string s = "Test "; s += 'A' + i;
 		elements.push_back(s);
 	}
+	
+	
+	// Initialize the scroll bar
+
+	scrollBarsReflectCursor = false;
+	
+	internalVertScroll = new ScrollBar(this, false);
+	internalVertScroll->SetLocation(0, Columns()-1);
+	internalVertScroll->SetLength(Rows());
+	
+	SetScrollBar(internalVertScroll);
 }
 
 
@@ -93,6 +101,7 @@ AbstractList::AbstractList(Container* parent, int _row, int _col, int rows,
  */
 AbstractList::~AbstractList(void)
 {
+	if (internalVertScroll != NULL) delete internalVertScroll;
 }
 
 
@@ -194,6 +203,13 @@ void AbstractList::Paint(void)
 	for (int i = 0; i < nElements; i++) {
 		PaintElement(i + pageStart);
 	}
+	
+	
+	// Paint the scroll bar
+	
+	if (internalVertScroll != NULL && internalVertScroll == vertScroll) {
+		internalVertScroll->Paint();
+	}
 }
 
 
@@ -291,6 +307,8 @@ void AbstractList::MoveCursorPageUp(void)
 {
 	EnsureValidScroll();
 	
+	selection = false;
+	
 	
 	// Set the new page start
 	
@@ -331,6 +349,8 @@ void AbstractList::MoveCursorPageDown(void)
 {
 	EnsureValidScroll();
 	
+	selection = false;
+	
 	
 	// Set the new page start
 	
@@ -363,6 +383,61 @@ void AbstractList::MoveCursorPageDown(void)
 	else {
 		cursor += d;
 	}
+	
+	
+	// Finish
+	
+	CursorMoved();
+	Paint();
+}
+
+
+/**
+ * Move the cursor to the beginning
+ */
+void AbstractList::MoveCursorToBeginning(void)
+{
+	EnsureValidScroll();
+	
+	selection = false;
+	
+	
+	// Set the new page start
+	
+	pageStart = 0;
+	
+	
+	// Move the cursor
+	
+	cursor = 0;
+	
+	
+	// Finish
+	
+	CursorMoved();
+	Paint();
+}
+
+
+/**
+ * Move the cursor to the end
+ */
+void AbstractList::MoveCursorToEnd(void)
+{
+	EnsureValidScroll();
+	
+	selection = false;
+	
+	
+	// Set the new page start
+	
+	pageStart = ((int) elements.size()) - Rows();
+	if (pageStart < 0) pageStart = 0;
+	
+	
+	// Move the cursor
+	
+	cursor = ((int) elements.size()) - 1;
 	
 	
 	// Finish
@@ -458,6 +533,16 @@ void AbstractList::OnKeyPressed(int key)
 		return;
 	}
 	
+	if (key == KEY_HOME) {
+		MoveCursorToBeginning();
+		return;
+	}
+
+	if (key == KEY_END) {
+		MoveCursorToEnd();
+		return;
+	}
+	
 	
 	// Cursor movement with selection
 	
@@ -488,6 +573,11 @@ void AbstractList::OnKeyPressed(int key)
  */
 void AbstractList::OnResize(int oldRows, int oldCols, int newRows, int newCols)
 {
+	if (internalVertScroll != NULL) {
+		internalVertScroll->SetLocation(0, Columns());
+		internalVertScroll->SetLength(Rows());
+	}
+
 	Component::OnResize(oldRows, oldCols, newRows, newCols);
 	EnsureValidScroll();
 }
