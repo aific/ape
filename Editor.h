@@ -337,6 +337,11 @@ public:
 	  * @return true if it is in the overwrite mode
 	  */
 	inline bool OverwriteMode(void) { return overwriteMode; }
+	
+	/**
+	 * Select all
+	 */
+	void SelectAll(void);
 
 	/**
 	 * Return the search pattern
@@ -367,3 +372,5 @@ public:
 };
 
 #endif
+
+

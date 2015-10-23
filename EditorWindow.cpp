@@ -198,19 +198,10 @@ void EditorWindow::OnKeyPressed(int key)
 
 		if (splitPane->OneComponentMode() == SPLITPANE_COMPONENT_NONE) {
 
-			if (patternEditor->Active()) {
+			// Focus the find dialog
 
-				// Close the find dialog
-
-				splitPane->SetOneComponentMode(SPLITPANE_COMPONENT_FIRST);
-				editor->SetHighlightPattern(NULL);
-			}
-			else {
-
-				// Focus the find dialog
-
-				patternEditor->Focus();
-			}
+			patternEditor->Focus();
+			patternEditor->SelectAll();
 		}
 		else {
 
@@ -338,3 +329,4 @@ void EditorWindow::Refresh(void)
 	
 	Component::Refresh();
 }
+

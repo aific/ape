@@ -1376,6 +1376,24 @@ void Editor::Redo(void)
 
 
 /**
+ * Select all
+ */
+void Editor::SelectAll(void)
+{
+	selection = true;
+	selRow = 0;
+	selCol = 0;
+
+	row = doc->NumLines() - 1;
+	col = doc->DisplayLength(row);
+	
+	EnsureValidScroll();
+	Paint();
+	UpdateCursor();
+}
+
+
+/**
  * Perform the necessary operations after an edit
  */
 void Editor::AfterEdit(void)
@@ -1516,13 +1534,13 @@ void Editor::OnKeyPressed(int key)
 		return;
 	}
 	
-	if (key == KEY_HOME || key == KEY_CTRL('a')) {
+	if (key == KEY_HOME) {
 		doc->FinalizeEditAction();
 		MoveCursorVeryLeft();
 		return;
 	}
 	
-	if (key == KEY_END || key == KEY_CTRL('e')) {
+	if (key == KEY_END) {
 		doc->FinalizeEditAction();
 		MoveCursorVeryRight();
 		return;
@@ -1568,6 +1586,15 @@ void Editor::OnKeyPressed(int key)
 	if (key == KEY_SHIFT_RIGHT) {
 		doc->FinalizeEditAction();
 		MoveCursorRight(true);
+		return;
+	}
+	
+	
+	// Select all
+	
+	if (key == KEY_CTRL('a')) {
+		doc->FinalizeEditAction();
+		SelectAll();
 		return;
 	}
 	
@@ -1727,5 +1754,6 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
 
 
