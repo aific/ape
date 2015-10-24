@@ -39,6 +39,24 @@
 
 
 /**
+ * Paint a string list item
+ *
+ * @param list the list component
+ * @param tcw the output buffer
+ * @param item the item
+ * @param active true if the item is active (under cursor)
+ * @param selected true if the item is selected
+ * @param highlightPattern the highlight pattern
+ */
+void PaintStringListItem(AbstractList* list, TerminalControlWindow* tcw,
+		const char* item, bool active, bool selected,
+		const char* highlightPattern)
+{
+	tcw->PutText(item);
+}
+
+
+/**
  * Create an instance of class AbstractList
  *
  * @param parent the parent container
@@ -74,14 +92,6 @@ AbstractList::AbstractList(Container* parent, int _row, int _col, int rows,
 
 	selection = false;
 	selStart = 0;
-
-
-	// For testing...
-	
-	for (int i = 0; i < 20; i++) {
-		std::string s = "Test "; s += 'A' + i;
-		elements.push_back(s);
-	}
 	
 	
 	// Initialize the scroll bar
@@ -92,7 +102,8 @@ AbstractList::AbstractList(Container* parent, int _row, int _col, int rows,
 	internalVertScroll->SetLocation(0, Columns()-1);
 	internalVertScroll->SetLength(Rows());
 	
-	SetScrollBar(internalVertScroll);
+	vertScroll = internalVertScroll;
+	vertScroll->SetRange(0, 0);
 }
 
 
@@ -114,7 +125,7 @@ void AbstractList::SetScrollBar(ScrollBar* vert)
 {
 	vertScroll = vert;
 
-	int m = elements.size();
+	int m = Size();
 	if (m > 0) m--;
 
 	if (vertScroll != NULL) {
@@ -143,13 +154,8 @@ void AbstractList::PaintElement(int index)
 {
 	int ncols = Columns();
 	
-	assert(index >= pageStart && index < (int) elements.size()
+	assert(index >= pageStart && index < Size()
 			&& index < pageStart + Rows());
-
-	const char* str = elements[index].c_str();
-	size_t strLength = strlen(str);
-
-	tcw->SetCursor(index - pageStart, 0);
 
 
 	// Determine if we are in selection
@@ -161,24 +167,34 @@ void AbstractList::PaintElement(int index)
 	}
 
 
-	// Set the color
+	// Initialize the buffer for painting items and set the color
+
+	bool hasScroll = internalVertScroll != NULL
+	              && internalVertScroll == vertScroll;
+	TerminalControlWindow w(1, ClientColumns() - (hasScroll ? 1 : 0));
 	
 	if (index == cursor) {
-		tcw->SetColor(cursorBg, cursorFg);
-		tcw->OutHorizontalLine(index - pageStart, 0, ClientColumns(), ' ');
+		w.SetColor(cursorBg, cursorFg);
 	}
 	else if (insel) {
-		tcw->SetColor(selBg, selFg);
-		tcw->OutHorizontalLine(index - pageStart, 0, ClientColumns(), ' ');
+		w.SetColor(selBg, selFg);
 	}
 	else {
-		tcw->SetColor(bg, fg);
+		w.SetColor(bg, fg);
 	}
 
+	w.Clear();
+	w.SetCursor(0, 0);
 
-	// TODO
 
-	tcw->PutText(str);
+	// Paint
+
+	PaintListItem(&w, index, index == cursor, insel);
+
+
+	// Paste to the buffer
+	
+	tcw->OutBuffer(index - pageStart, 0, &w);
 }
 
 
@@ -193,8 +209,8 @@ void AbstractList::Paint(void)
 	// Compute the bounds
 	
 	int nElements = Rows();
-	if (nElements + pageStart > (int) elements.size()) {
-		nElements = ((int) elements.size()) - pageStart;
+	if (nElements + pageStart > Size()) {
+		nElements = Size() - pageStart;
 	}
 	
 	
@@ -263,7 +279,7 @@ void AbstractList::MoveCursorUp(bool shift)
  */
 void AbstractList::MoveCursorDown(bool shift)
 {
-	int numElements = elements.size();
+	int numElements = Size();
 	if (cursor >= numElements - 1) return;
 	
 	EnsureValidScroll();
@@ -357,10 +373,10 @@ void AbstractList::MoveCursorPageDown(void)
 	int p = pageStart;
 	int d = Rows();
 	
-	int m = ((int) elements.size()) - Rows();
+	int m = Size() - Rows();
 	if (p + d > m) d = m - p;
 
-	if (d == 0 && cursor == ((int) elements.size()) - 1) {
+	if (d == 0 && cursor == Size() - 1) {
 		return;
 	}
 	
@@ -373,11 +389,11 @@ void AbstractList::MoveCursorPageDown(void)
 	if (d < Rows()) {
 		cursor += Rows() - 2;
 		if (d == 0) cursor++;
-		if (pageStart + Rows() == ((int) elements.size())) {
-			cursor = ((int) elements.size()) - 1;
+		if (pageStart + Rows() == Size()) {
+			cursor = Size() - 1;
 		}
-		if (cursor > ((int) elements.size()) - 1) {
-			cursor = ((int) elements.size()) - 1;
+		if (cursor > Size() - 1) {
+			cursor = Size() - 1;
 		}
 	}
 	else {
@@ -431,13 +447,13 @@ void AbstractList::MoveCursorToEnd(void)
 	
 	// Set the new page start
 	
-	pageStart = ((int) elements.size()) - Rows();
+	pageStart = Size() - Rows();
 	if (pageStart < 0) pageStart = 0;
 	
 	
 	// Move the cursor
 	
-	cursor = ((int) elements.size()) - 1;
+	cursor = Size() - 1;
 	
 	
 	// Finish
@@ -464,8 +480,8 @@ bool AbstractList::EnsureValidScroll(void)
 		return true;
 	}
 
-	if (pageStart > 0 && ((int) elements.size()) - pageStart < Rows()) {
-		int p = ((int) elements.size()) - Rows();
+	if (pageStart > 0 && Size() - pageStart < Rows()) {
+		int p = Size() - Rows();
 		if (p < 0) p = 0;
 		pageStart = p;
 		return true;

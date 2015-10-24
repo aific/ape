@@ -48,7 +48,7 @@
 FileDialog::FileDialog(Window* parent, FileDialogType type, const char* title)
 	: DialogWindow(parent, title)
 {
-	fileList = new AbstractList(this, 1, 1,
+	fileList = new List<std::string>(this, 1, 1,
 			ClientRows() - 3, ClientColumns() - 2,
 			ANCHOR_ALL);
 	fileList->RegisterEventHandler(this);

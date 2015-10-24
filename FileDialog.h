@@ -58,7 +58,7 @@ class FileDialog : public DialogWindow, protected EventHandler
 {
 	FileDialogType type;
 
-	AbstractList* fileList;
+	List<std::string>* fileList;
 
 	Button* okButton;
 	Button* cancelButton;
