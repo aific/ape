@@ -48,7 +48,7 @@
 FileDialog::FileDialog(Window* parent, FileDialogType type, const char* title)
 	: DialogWindow(parent, title)
 {
-	fileList = new List<std::string>(this, 1, 1,
+	fileList = new List<Element, ItemRenderer>(this, true /* sorted */, 1, 1,
 			ClientRows() - 3, ClientColumns() - 2,
 			ANCHOR_ALL);
 	fileList->RegisterEventHandler(this);
@@ -61,6 +61,29 @@ FileDialog::FileDialog(Window* parent, FileDialogType type, const char* title)
 			ClientColumns() - 10, 8, ANCHOR_RIGHT | ANCHOR_BOTTOM);
 	cancelButton->RegisterEventHandler(this);
 
+	DIR *dir = opendir(".");
+	if (!dir) {
+		perror("opendir");
+		exit(EXIT_FAILURE);
+	}
+
+	for (;;) {
+		struct dirent entry;
+		struct dirent *result;
+
+		int error = readdir_r(dir, &entry, &result);
+		if (error != 0) {
+			perror("readdir");
+			exit(EXIT_FAILURE);
+		}
+
+		if (result == NULL) break;
+		if (strcmp(result->d_name, ".") == 0) continue;
+		
+		fileList->Add(Element(result));
+	}
+	closedir(dir);
+
 	Center();
 	returnValue = false;
 }
@@ -71,6 +94,37 @@ FileDialog::FileDialog(Window* parent, FileDialogType type, const char* title)
  */
 FileDialog::~FileDialog(void)
 {
+}
+
+
+/**
+ * Paint a list item
+ *
+ * @param list the list component
+ * @param tcw the output buffer
+ * @param item the item
+ * @param active true if the item is active (under cursor)
+ * @param selected true if the item is selected
+ * @param highlightPattern the highlight pattern
+ */
+void FileDialog::ItemRenderer::Paint(AbstractList* list,
+		TerminalControlWindow* tcw, const FileDialog::Element& item,
+		bool active, bool selected, const char* highlightPattern)
+{
+	std::ostringstream ss;
+	ss << item.Entry().d_name;
+
+	switch (item.Entry().d_type) {
+		case DT_DIR:
+			ss << "/";
+			break;
+		case DT_LNK:
+			ss << "@";
+			break;
+	}
+
+	::PaintStringListItem(list, tcw, ss.str().c_str(), active, selected,
+			highlightPattern);
 }
 
 

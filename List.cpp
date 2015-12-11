@@ -60,16 +60,20 @@ void PaintStringListItem(AbstractList* list, TerminalControlWindow* tcw,
  * Create an instance of class AbstractList
  *
  * @param parent the parent container
+ * @param sorted true if the elements need to be always sorted
  * @param row the initial row
  * @param col the initial column
  * @param rows the number of rows
  * @param cols the number of columns
  * @param anchor set the anchor
  */
-AbstractList::AbstractList(Container* parent, int _row, int _col, int rows,
-		int cols, int anchor)
+AbstractList::AbstractList(Container* parent, bool _sorted,
+		int _row, int _col, int rows, int cols, int anchor)
 	: Component(parent, true, _row, _col, rows, cols, anchor)
 {
+	sorted = _sorted;
+
+
 	// Configure and initialize the list
 
 	bg = 6;
@@ -131,7 +135,16 @@ void AbstractList::SetScrollBar(ScrollBar* vert)
 	if (vertScroll != NULL) {
 		vertScroll->SetRange(0, m);
 	}
-	
+
+	UpdateScrollBarPosition();
+}
+
+
+/**
+ * Update the scroll bar position
+ */
+void AbstractList::UpdateScrollBarPosition(void)
+{
 	if (scrollBarsReflectCursor) {
 		if (vertScroll != NULL) {
 			vertScroll->SetPosition(cursor);
@@ -496,16 +509,45 @@ bool AbstractList::EnsureValidScroll(void)
  */
 void AbstractList::CursorMoved(void)
 {
-	if (scrollBarsReflectCursor) {
-		if (vertScroll != NULL) {
-			vertScroll->SetPosition(cursor);
-		}
+	UpdateScrollBarPosition();
+}
+
+
+/**
+ * Perform any necessary actions after adding an element
+ *
+ * @param index the index of the new element
+ */
+void AbstractList::ElementAdded(int index)
+{
+	// Update the cursor position
+
+	bool cursorMoved = false;
+	if (index <= cursor && Size() > 1) {
+		cursor++;
+		cursorMoved = true;
+	}
+
+
+	// Update the scroll bar and do other related things
+
+	if (vertScroll != NULL) {
+		vertScroll->SetRange(0, Size());
+	}
+
+	EnsureValidScroll();
+
+	if (cursorMoved) {
+		CursorMoved();
 	}
 	else {
-		if (vertScroll != NULL) {
-			vertScroll->SetPosition(pageStart, Rows());
-		}
+		UpdateScrollBarPosition();
 	}
+
+
+	// Finish
+
+	Paint();
 }
 
 

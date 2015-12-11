@@ -37,10 +37,13 @@
 
 #include "Component.h"
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "ScrollBar.h"
+#include "util.h"
 
 
 class AbstractList;
@@ -175,6 +178,8 @@ class AbstractList : public Component
 	ScrollBar* vertScroll;
 	ScrollBar* internalVertScroll;
 	bool scrollBarsReflectCursor;
+
+	bool sorted;
 	
 
 	/**
@@ -226,6 +231,11 @@ class AbstractList : public Component
 	bool EnsureValidScroll(void);
 
 	/**
+	 * Update the scroll bar position
+	 */
+	void UpdateScrollBarPosition(void);
+
+	/**
 	 * Perform any necessary actions after moving a cursor
 	 */
 	void CursorMoved(void);
@@ -261,6 +271,13 @@ protected:
 	 */
 	virtual void PaintListItem(TerminalControlWindow* tcw, int index,
 			bool active, bool selected) = 0;
+
+	/**
+	 * Perform any necessary actions after adding an element
+	 *
+	 * @param index the index of the new element
+	 */
+	void ElementAdded(int index);
 	
 
 public:
@@ -269,13 +286,15 @@ public:
 	 * Create an instance of class AbstractList
 	 *
 	 * @param parent the parent container
+	 * @param sorted true if the elements need to be always sorted
 	 * @param row the initial row
 	 * @param col the initial column
 	 * @param rows the number of rows
 	 * @param cols the number of columns
 	 * @param anchor set the anchor
 	 */
-	AbstractList(Container* parent, int row = 0, int col = 0,
+	AbstractList(Container* parent, bool sorted = false,
+			int row = 0, int col = 0,
 			int rows = 10, int cols = 16,
 			int anchor = ANCHOR_LEFT | ANCHOR_TOP);
 
@@ -316,6 +335,13 @@ public:
 	 * @return the number of elements
 	 */
 	virtual int Size(void) = 0;
+
+	/**
+	 * Determine if the list is defined as sorted
+	 *
+	 * @return true if the list is defined as sorted
+	 */
+	inline bool Sorted(void) { return sorted; }
 };
 
 
@@ -355,25 +381,18 @@ public:
 	 * Create an instance of class List
 	 *
 	 * @param parent the parent container
+	 * @param sorted true if the elements need to be always sorted
 	 * @param row the initial row
 	 * @param col the initial column
 	 * @param rows the number of rows
 	 * @param cols the number of columns
 	 * @param anchor set the anchor
 	 */
-	List(Container* parent, int row = 0, int col = 0,
+	List(Container* parent, bool sorted = false, int row = 0, int col = 0,
 			int rows = 10, int cols = 16,
 			int anchor = ANCHOR_LEFT | ANCHOR_TOP)
-		: AbstractList(parent, row, col, rows, cols, anchor)
+		: AbstractList(parent, sorted, row, col, rows, cols, anchor)
 	{
-		// For testing...
-
-		for (int i = 0; i < 20; i++) {
-			std::string s = "Test "; s += 'A' + i;
-			elements.push_back((T) s);
-		}
-
-		SetScrollBar(VertScrollBar());	// XXX Hack
 	}
 
 	/**
@@ -390,6 +409,28 @@ public:
 	 * @return the number of elements
 	 */
 	virtual int Size(void) { return elements.size(); }
+
+	/**
+	 * Add an element to the list
+	 *
+	 * @param element the element
+	 */
+	void Add(const T& element)
+	{
+		if (Sorted()) {
+			// Perhaps we should do this in O(log n) instead of O(n)...
+			size_t i = 0;
+			for ( ; i < elements.size(); i++) {
+				if (!(element > elements[i])) break;
+			}
+			elements.insert(elements.begin() + i, element);
+			ElementAdded(i);
+		}
+		else {
+			elements.push_back(element);
+			ElementAdded(elements.size() - 1);
+		}
+	}
 };
 
 #endif
