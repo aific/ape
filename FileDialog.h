@@ -38,7 +38,7 @@
 #include <dirent.h>
 
 #include "DialogWindow.h"
-#include "List.h"
+#include "FileList.h"
 
 
 /**
@@ -58,168 +58,11 @@ enum FileDialogType
  */
 class FileDialog : public DialogWindow, protected EventHandler
 {
-	/**
-	 * An element in the file dialog
-	 */
-	class Element
-	{
-		struct dirent entry;
-	
-	public:
-
-		/**
-		 * Create an instance of Element
-		 *
-		 * @param e the directory entry
-		 */
-		Element(struct dirent* e)
-		{
-			memcpy(&entry, e, sizeof(entry));
-		}
-
-		/**
-		 * Destroy the element
-		 */
-		~Element(void) {}
-
-		/**
-		 * Get the directory entry
-		 *
-		 * @return the directory entry
-		 */
-		inline const struct dirent& Entry(void) const { return entry; }
-
-		/**
-		 * Compare two elements
-		 *
-		 * @param other the other element
-		 * @return true if the condition is satisfied
-		 */
-		inline bool operator== (const Element& other) const
-		{
-			return strcmp(entry.d_name, other.entry.d_name) == 0;
-		}
-
-		/**
-		 * Compare two elements
-		 *
-		 * @param other the other element
-		 * @return true if the condition is satisfied
-		 */
-		inline bool operator!= (const Element& other) const
-		{
-			return strcmp(entry.d_name, other.entry.d_name) != 0;
-		}
-
-		/**
-		 * Compare two elements
-		 *
-		 * @param other the other element
-		 * @return true if the condition is satisfied
-		 */
-		bool operator< (const Element& other) const
-		{
-			// . comes first
-
-			if (strcmp(entry.d_name, ".") == 0) {
-				return strcmp(other.entry.d_name, ".") != 0;
-			}
-			if (strcmp(other.entry.d_name, ".") == 0) return false;
-
-
-			// .. comes second
-
-			if (strcmp(entry.d_name, "..") == 0) {
-				return strcmp(other.entry.d_name, "..") != 0;
-			}
-			if (strcmp(other.entry.d_name, "..") == 0) return false;
-
-
-			// Then directories
-
-			if (entry.d_type == DT_DIR) {
-				if (other.entry.d_type != DT_DIR) return true;
-			}
-			else if (other.entry.d_type == DT_DIR) return false;
-
-
-			// Finally, compare by the file name
-
-			return strcmp(entry.d_name, other.entry.d_name) < 0;
-		}
-
-		/**
-		 * Compare two elements
-		 *
-		 * @param other the other element
-		 * @return true if the condition is satisfied
-		 */
-		inline bool operator<= (const Element& other) const
-		{
-			return *this < other || *this == other;
-		}
-
-		/**
-		 * Compare two elements
-		 *
-		 * @param other the other element
-		 * @return true if the condition is satisfied
-		 */
-		inline bool operator> (const Element& other) const
-		{
-			return !(*this <= other);
-		}
-
-		/**
-		 * Compare two elements
-		 *
-		 * @param other the other element
-		 * @return true if the condition is satisfied
-		 */
-		inline bool operator>= (const Element& other) const
-		{
-			return !(*this < other);
-		}
-	};
-
-
-	/**
-	 * The item renderer
-	 */
-	class ItemRenderer : ListItemRenderer<Element>
-	{
-
-	public:
-
-		/**
-		 * Create an instance of class ItemRenderer
-		 */
-		inline ItemRenderer() {}
-
-		/**
-		 * Destroy an instance of class ItemRenderer
-		 */
-		virtual ~ItemRenderer() {}
-
-		/**
-		 * Paint a list item
-		 *
-		 * @param list the list component
-		 * @param tcw the output buffer
-		 * @param item the item
-		 * @param active true if the item is active (under cursor)
-		 * @param selected true if the item is selected
-		 * @param highlightPattern the highlight pattern
-		 */
-		virtual void Paint(AbstractList* list, TerminalControlWindow* tcw,
-				const Element& item, bool active, bool selected,
-				const char* highlightPattern);
-	};
 
 
 	FileDialogType type;
 
-	List<Element, ItemRenderer>* fileList;
+	FileList* fileList;
 
 	Button* okButton;
 	Button* cancelButton;

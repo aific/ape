@@ -121,7 +121,7 @@ void PaintStringListItem(AbstractList* list, TerminalControlWindow* tcw,
  * @author Peter Macko
  */
 template <typename T>
-class DefaultListItemRenderer : ListItemRenderer<T>
+class DefaultListItemRenderer : public ListItemRenderer<T>
 {
 
 public:
@@ -350,11 +350,12 @@ public:
  *
  * @author Peter Macko
  */
-template <typename T, class Renderer = DefaultListItemRenderer<T>>
+template <typename T>
 class List : public AbstractList
 {
 	std::vector<T> elements;
-	Renderer renderer;
+	ListItemRenderer<T>* renderer;
+	bool ownRenderer;
 
 
 protected:
@@ -371,7 +372,7 @@ protected:
 	virtual void PaintListItem(TerminalControlWindow* tcw, int index,
 			bool active, bool selected)
 	{
-		renderer.Paint(this, tcw, elements[index], active, selected, "");
+		renderer->Paint(this, tcw, elements[index], active, selected, "");
 	}
 	
 
@@ -393,6 +394,8 @@ public:
 			int anchor = ANCHOR_LEFT | ANCHOR_TOP)
 		: AbstractList(parent, sorted, row, col, rows, cols, anchor)
 	{
+		renderer = new DefaultListItemRenderer<T>();
+		ownRenderer = true;
 	}
 
 	/**
@@ -400,7 +403,21 @@ public:
 	 */
 	virtual ~List(void)
 	{
+		if (renderer && ownRenderer) delete renderer;
+
 		// TODO How to delete the contents?
+	}
+
+	/**
+	 * Set the list item renderer
+	 *
+	 * @param renderer the renderer
+	 * @param autoDestroy true to destroy the object together with this list
+	 */
+	void SetRenderer(ListItemRenderer<T>* renderer, bool autoDestroy=false)
+	{
+		this->renderer = renderer;
+		ownRenderer = autoDestroy;
 	}
 
 	/**
