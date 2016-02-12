@@ -104,6 +104,8 @@ void FileListItemRenderer::Paint(AbstractList* list,
  */
 ReturnExt FileList::SetPath(const char* path, bool inclusive)
 {
+	std::string normalizedPath = NormalizePath(path);
+
 	DIR *dir = opendir(path);
 	if (!dir) {
 		return ReturnExt(false, "Cannot open the directory");
@@ -124,6 +126,8 @@ ReturnExt FileList::SetPath(const char* path, bool inclusive)
 		Add(FileListItem(result));
 	}
 	closedir(dir);
+
+	this->path = normalizedPath;
 
 	return ReturnExt(true);
 }

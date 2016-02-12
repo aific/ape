@@ -188,5 +188,13 @@ int digits(int num, int base = 10);
  */
 void log(enum log_level_t level, const char* format, ...);
 
+/**
+ * Normalize a path
+ *
+ * @param path the path
+ * @param wd the working directory (use NULL for the CWD)
+ * @return the normalized path, or "" on error
+ */
+std::string NormalizePath(const char* path, const char* wd = NULL);
 
 #endif

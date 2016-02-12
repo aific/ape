@@ -217,6 +217,8 @@ public:
  */
 class FileList : public List<FileListItem>
 {
+	std::string path;
+
 
 public:
 	
