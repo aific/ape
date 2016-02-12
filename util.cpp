@@ -185,7 +185,12 @@ std::string NormalizePath(const char* path, const char* wd)
 		size_t len = ((size_t) t) - ((size_t) p);
 		if (len == 2 && strncmp(p, "..", 2) == 0) {
 			if (p == s + 1) {
-				memmove(p, p + 3, strlen(p) - 2);
+				if (*t == '\0') {
+					*p = '\0';
+				}
+				else {
+					memmove(p, p + 3, strlen(p) - 2);
+				}
 			}
 			else {
 				bool ok = false;

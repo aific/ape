@@ -104,6 +104,8 @@ void FileListItemRenderer::Paint(AbstractList* list,
  */
 ReturnExt FileList::SetPath(const char* path, bool inclusive)
 {
+	// TODO Implement "inclusive"
+	
 	std::string normalizedPath = NormalizePath(path);
 
 	DIR *dir = opendir(path);
