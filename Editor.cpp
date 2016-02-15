@@ -159,10 +159,12 @@ void Editor::SetScrollBars(ScrollBar* horiz, ScrollBar* vert)
  * Load from file, and set the associated document file name
  *
  * @param file the file name
+ * @param a ReturnExt
  */
-void Editor::LoadFromFile(const char* file)
+ReturnExt Editor::LoadFromFile(const char* file)
 {
-	doc->LoadFromFile(file);
+	ReturnExt r = doc->LoadFromFile(file);
+	if (!r) return r;
 
 	col = 0;
 	row = 0;
@@ -201,6 +203,8 @@ void Editor::LoadFromFile(const char* file)
 
 	UpdateCursor();
 	Paint();
+
+	return ReturnExt(true);
 }
 
 
@@ -208,20 +212,24 @@ void Editor::LoadFromFile(const char* file)
  * Save to file
  *
  * @param file the file name
- * @param switchFile whether to set the associated file name and clear the modified flag
+ * @param switchFile whether to set the associated file name and clear
+ *                   the modified flag
+ * @return a ReturnExt
  */
-void Editor::SaveToFile(const char* file, bool switchFile)
+ReturnExt Editor::SaveToFile(const char* file, bool switchFile)
 {
-	doc->SaveToFile(file);
+	return doc->SaveToFile(file);
 }
 
 
 /**
  * Save to the current file
+ *
+ * @return a ReturnExt
  */
-void Editor::Save()
+ReturnExt Editor::Save()
 {
-	doc->Save();
+	return doc->Save();
 }
 
 

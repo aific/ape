@@ -514,6 +514,24 @@ void AbstractList::CursorMoved(void)
 
 
 /**
+ * Set the cursor position
+ *
+ * @param cursor the new cursor position
+ */
+void AbstractList::SetCursor(int cursor)
+{
+	if (cursor >= Size()) cursor = ((int) Size()) - 1;
+	if (cursor < 0) cursor = 0;
+
+	if (this->cursor == cursor) return;
+	this->cursor = cursor;
+
+	EnsureValidScroll();
+	CursorMoved();
+}
+
+
+/**
  * Perform any necessary actions after adding an element
  *
  * @param index the index of the new element

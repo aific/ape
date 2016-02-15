@@ -99,9 +99,17 @@ bool FileDialog::Run(void)
  */
 void FileDialog::OnAction(Component* sender)
 {
-	if (sender == okButton) {
+	if (sender == fileList) {
 		returnValue = true;
 		Close();
+		return;
+	}
+
+	if (sender == okButton) {
+		// Send the Return key to the file list, so that if the cursor is over
+		// a directory, we will descend instead of closing this dialog
+		fileList->SendKey(KEY_RETURN);
+		fileList->Focus();
 		return;
 	}
 
@@ -112,3 +120,15 @@ void FileDialog::OnAction(Component* sender)
 	}
 }
 
+
+/**
+ * Get the path under the cursor
+ *
+ * @return the path under the cursor (or "" on error)
+ */
+std::string FileDialog::Path()
+{
+	if (!returnValue) return "";
+
+	return fileList->Path();
+}

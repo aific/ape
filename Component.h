@@ -453,6 +453,13 @@ public:
 	 * @param handler the handler
 	 */
 	virtual void RegisterEventHandler(EventHandler* handler);
+
+	/**
+	 * Send a key event
+	 *
+	 * @param key the key code
+	 */
+	inline void SendKey(int key) { OnKeyPressed(key); }
 };
 
 #endif

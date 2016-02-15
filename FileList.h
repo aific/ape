@@ -217,7 +217,18 @@ public:
  */
 class FileList : public List<FileListItem>
 {
-	std::string path;
+	std::string directory;
+	std::string initialDirectory;
+
+
+protected:
+	
+	/**
+	 * An event handler for pressing a key
+	 * 
+	 * @param key the key code
+	 */
+	virtual void OnKeyPressed(int key);
 
 
 public:
@@ -239,15 +250,13 @@ public:
 	{
 		SetRenderer(new FileListItemRenderer(), true);
 		SetPath(".", true);
+		initialDirectory = directory;
 	}
 
 	/**
 	 * Destroy the object
 	 */
-	virtual ~FileList(void)
-	{
-		// TODO How to delete the contents?
-	}
+	virtual ~FileList(void) {}
 
 	/**
 	 * Set the path
@@ -260,6 +269,13 @@ public:
 	 * @return a ReturnExt
 	 */
 	ReturnExt SetPath(const char* path, bool inclusive);
+
+	/**
+	 * Get the path under the cursor
+	 *
+	 * @return the path under the cursor (or "" on error)
+	 */
+	std::string Path();
 };
 
 #endif

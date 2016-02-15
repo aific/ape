@@ -206,8 +206,9 @@ public:
 	 * Load from file, and set the associated document file name
 	 *
 	 * @param file the file name
+	 * @return a ReturnExt
 	 */
-	void LoadFromFile(const char* file);
+	ReturnExt LoadFromFile(const char* file);
 
 	/**
 	 * Save to file

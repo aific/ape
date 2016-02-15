@@ -65,6 +65,16 @@ public:
 
 	/**
 	 * Create an instance of ReturnExt
+	 */
+	ReturnExt()
+	{
+		this->success   = true;
+		this->message   = "";
+		this->errorCode = 0;
+	}
+
+	/**
+	 * Create an instance of ReturnExt
 	 *
 	 * @param success true if this is a success return value
 	 * @param message the message
@@ -119,6 +129,19 @@ public:
 	 * Destroy an instance of this class
 	 */
 	~ReturnExt(void) {}
+
+	/**
+	 * Assign a ReturnExt
+	 *
+	 * @param other the other ReturnExt
+	 */
+	ReturnExt& operator= (const ReturnExt& other)
+	{
+		this->success   = other.success;
+		this->message   = other.message;
+		this->errorCode = other.errorCode;
+		return *this;
+	}
 
 	/**
 	 * Return true if this run was a success

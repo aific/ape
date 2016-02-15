@@ -118,8 +118,9 @@ public:
 	 * Load from file, and set the associated document file name
 	 *
 	 * @param file the file name
+	 * @param a ReturnExt
 	 */
-	void LoadFromFile(const char* file);
+	ReturnExt LoadFromFile(const char* file);
 	
 	/**
 	 * Paint the contents of the window

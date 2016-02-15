@@ -35,6 +35,10 @@
 #include "stdafx.h"
 #include "FileList.h"
 
+#include <sys/stat.h>
+#include <libgen.h>
+#include "DialogWindow.h"
+
 
 /**
  * The << operator for FileListItem
@@ -104,33 +108,133 @@ void FileListItemRenderer::Paint(AbstractList* list,
  */
 ReturnExt FileList::SetPath(const char* path, bool inclusive)
 {
-	// TODO Implement "inclusive"
-	
 	std::string normalizedPath = NormalizePath(path);
+	std::string directory = normalizedPath;
 
-	DIR *dir = opendir(path);
-	if (!dir) {
-		return ReturnExt(false, "Cannot open the directory");
+	if (normalizedPath == "") {
+		return ReturnExt(false, "Illegal path");
 	}
 
+
+	// Determine if the path is a directory
+
+	struct stat st;
+	bool pathIsDirectory = false;
+	if (stat(directory.c_str(), &st) == 0) {
+		pathIsDirectory = S_ISDIR(st.st_mode);
+	}
+
+	std::string select = "";
+	if (!pathIsDirectory || (pathIsDirectory && !inclusive)) {
+		std::string d = directory + "/..";
+		directory = NormalizePath(d.c_str());
+
+		// Get the basename to search for in the directory listing
+		const char* p = normalizedPath.c_str() + normalizedPath.length() - 1;
+		while (p != normalizedPath.c_str()) {
+			if (*p == '/') break;
+			p--;
+		}
+		if (*p == '/') p++;
+		select = p;
+	}
+
+
+	// List the directory
+
+	std::vector<FileListItem> contents;
+
+	DIR *dir = opendir(directory.c_str());
+	if (!dir) {
+		return ReturnExt(false, "Cannot open the directory", errno);
+	}
+
+	ssize_t selectIndex = -1;
 	for (;;) {
 		struct dirent entry;
 		struct dirent *result;
 
 		int error = readdir_r(dir, &entry, &result);
 		if (error != 0) {
-			return ReturnExt(false, "Cannot list the directory");
+			return ReturnExt(false, "Cannot list the directory", errno);
 		}
 
 		if (result == NULL) break;
-		if (strcmp(result->d_name, ".") == 0) continue;
+		if (strcmp(result->d_name, "." ) == 0) continue;
+		if (strcmp(result->d_name, "..") == 0 && directory == "/") continue;
 		
-		Add(FileListItem(result));
+		contents.push_back(FileListItem(result));
+
+		if (select != "" && select == result->d_name) {
+			selectIndex = contents.size() - 1;
+		}
 	}
 	closedir(dir);
 
-	this->path = normalizedPath;
+
+	// Set the List contents
+
+	this->directory = directory;
+	SetContents(contents);
+	if (selectIndex >= 0) SetCursor(Find(contents[selectIndex]));
 
 	return ReturnExt(true);
+}
+
+
+/**
+ * An event handler for pressing a key
+ * 
+ * @param key the key code
+ */
+void FileList::OnKeyPressed(int key)
+{
+	if (key == KEY_ENTER || key == KEY_RETURN) {
+		
+		if (Cursor() >= 0 && Cursor() < Size()) {
+			FileListItem& item = (*this)[Cursor()];
+			if (item.Entry().d_type == DT_DIR) {
+				ReturnExt r;
+				if (strcmp(item.Entry().d_name, "..") == 0) {
+					r = SetPath(directory.c_str(), false);
+				}
+				else {
+					std::string p = directory + "/";
+					p += item.Entry().d_name;
+					r = SetPath(p.c_str(), true);
+				}
+				if (!r) {
+					Dialogs::Error(ParentWindow(), r);
+				}
+			}
+			else {
+				FireOnAction();
+			}
+		}
+
+		return;
+	}
+
+	List<FileListItem>::OnKeyPressed(key);
+}
+
+
+/**
+ * Get the path under the cursor
+ *
+ * @return the path under the cursor (or "" on error)
+ */
+std::string FileList::Path()
+{
+	if (Cursor() >= 0 && Cursor() < Size()) {
+		FileListItem& item = (*this)[Cursor()];
+		std::string p = directory + "/";
+		p += item.Entry().d_name;
+		p = NormalizePath(p.c_str());
+		return p;
+	}
+	else {
+		return "";
+	}
 }
 

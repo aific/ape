@@ -58,8 +58,6 @@ enum FileDialogType
  */
 class FileDialog : public DialogWindow, protected EventHandler
 {
-
-
 	FileDialogType type;
 
 	FileList* fileList;
@@ -92,6 +90,13 @@ public:
 	 * @return true on okay, false on cancel
 	 */
 	bool Run(void);
+
+	/**
+	 * Get the path under the cursor
+	 *
+	 * @return the path under the cursor (or "" on error)
+	 */
+	std::string Path();
 
 
 protected:

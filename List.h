@@ -223,6 +223,9 @@ class AbstractList : public Component
 	 */
 	void PaintElement(int index);
 	
+
+protected:
+	
 	/**
 	 * Scroll the window such that the cursor is visible
 	 * 
@@ -239,9 +242,6 @@ class AbstractList : public Component
 	 * Perform any necessary actions after moving a cursor
 	 */
 	void CursorMoved(void);
-	
-
-protected:
 	
 	/**
 	 * An event handler for pressing a key
@@ -328,6 +328,13 @@ public:
 	 * @return the cursor position (index)
 	 */
 	inline int Cursor(void) { return cursor; }
+
+	/**
+	 * Set the cursor position
+	 *
+	 * @param cursor the new cursor position
+	 */
+	void SetCursor(int cursor);
 
 	/**
 	 * Get the number of elements
@@ -447,6 +454,62 @@ public:
 			elements.push_back(element);
 			ElementAdded(elements.size() - 1);
 		}
+	}
+
+	/**
+	 * Get the element by index
+	 *
+	 * @param index the index
+	 * @return the reference to the element
+	 */
+	inline T& operator[] (int index)
+	{
+		return elements[index];
+	}
+
+	/**
+	 * Get the element by index
+	 *
+	 * @param index the index
+	 * @return the reference to the element
+	 */
+	inline T& Item(int index)
+	{
+		return elements[index];
+	}
+
+	/**
+	 * Set the contents
+	 *
+	 * @param contents the new contents
+	 */
+	void SetContents(std::vector<T>& contents)
+	{
+		elements = contents;
+		if (Sorted()) {
+			std::stable_sort(elements.begin(), elements.end());
+		}
+
+		if (VertScrollBar() != NULL) {
+			VertScrollBar()->SetRange(0, Size());
+		}
+
+		SetCursor(0);
+		UpdateScrollBarPosition();
+	}
+
+	/**
+	 * Find an item by value
+	 *
+	 * @param item the item
+	 * @return the index, or -1 if not found
+	 */
+	int Find(const T& item)
+	{
+		for (int i = 0; i < Size(); i++) {
+			if (Item(i) == item) return i;
+		}
+		return -1;
 	}
 };
 

@@ -94,15 +94,15 @@ void EditorDocument::Clear(void)
  * Load from file, and set the associated document file name
  *
  * @param file the file name
+ * @return a ReturnExt
  */
-void EditorDocument::LoadFromFile(const char* file)
+ReturnExt EditorDocument::LoadFromFile(const char* file)
 {
 	// Open the file
 
 	FILE* f = fopen(file, "rt");
 	if (f == NULL) {
-		//###
-		abort();
+		return ReturnExt(false, "Cannot open the file", errno);
 	}
 
 
@@ -160,6 +160,8 @@ void EditorDocument::LoadFromFile(const char* file)
 
 	modified = false;
 	fileName = file;
+
+	return ReturnExt(true);
 }
 
 

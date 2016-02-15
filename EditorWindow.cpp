@@ -130,10 +130,12 @@ EditorWindow::~EditorWindow(void)
  * Load from file, and set the associated document file name
  *
  * @param file the file name
+ * @param a ReturnExt
  */
-void EditorWindow::LoadFromFile(const char* file)
+ReturnExt EditorWindow::LoadFromFile(const char* file)
 {
-	editor->LoadFromFile(file);
+	ReturnExt r = editor->LoadFromFile(file);
+	if (!r) return r;
 
 	char* s = strdup(file);
 	char* b = basename(s);
@@ -141,6 +143,8 @@ void EditorWindow::LoadFromFile(const char* file)
 	free(s);
 
 	Paint();
+	
+	return ReturnExt(true);
 }
 
 
@@ -230,7 +234,18 @@ void EditorWindow::OnKeyPressed(int key)
 	else if (key == KEY_CTRL('o')) {
 
 		FileDialog* d = new FileDialog(this, FILE_DIALOG_OPEN, "Open");
-		d->Run();
+		if (d->Run()) {
+			// TODO
+			EditorWindow* w = new EditorWindow(1, 1, 50, 20);
+			ReturnExt r = w->LoadFromFile(d->Path().c_str());
+			if (!r) {
+				w->Close();
+				Dialogs::Error(this, r);
+			}
+			else {
+				wm.Add(w);
+			}
+		}
 	}
 
 	else if (key == KEY_CTRL('s')) {
