@@ -35,6 +35,7 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 
+#include <cassert>
 #include <cctype>
 #include <cmath>
 #include <cstdio>
@@ -42,7 +43,6 @@
 #include <cstring>
 #include <cstdarg>
 
-#include <assert.h>
 #include <iostream>
 #include <exception>
 #include <string>
@@ -50,10 +50,16 @@
 #include <curses.h>
 #include <panel.h>
 
+#include <unistd.h>
+
 #include "util.h"
 
 #if defined(macintosh) || defined(__APPLE__)
 #define _MAC
+#endif
+
+#if defined(__linux__)
+#include <linux/limits.h>
 #endif
 
 #define KEY_CTRL(x) ((x) == ' ' ? 0 : (x) - 'a' + 1)

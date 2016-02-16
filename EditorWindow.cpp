@@ -54,6 +54,9 @@
 EditorWindow::EditorWindow(int row, int col, int rows, int cols)
 	: Window("Untitled", row, col, rows, cols, 4, 7)
 {
+	editor = NULL;
+
+
 	// Add scroll bars
 	
 	AddScrollBar(true, 16, 3);
@@ -236,7 +239,7 @@ void EditorWindow::OnKeyPressed(int key)
 		FileDialog* d = new FileDialog(this, FILE_DIALOG_OPEN, "Open");
 		if (d->Run()) {
 			// TODO
-			EditorWindow* w = new EditorWindow(1, 1, 50, 20);
+			EditorWindow* w = new EditorWindow(1, 1, 60, 20);
 			ReturnExt r = w->LoadFromFile(d->Path().c_str());
 			if (!r) {
 				w->Close();
