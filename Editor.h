@@ -77,7 +77,6 @@ class Editor : public Component
 	int selRow;
 	int selCol;
 	bool selection;
-	std::string clipboard;
 	
 	bool overwriteMode;
 	bool scrollBarsReflectCursor;

@@ -62,6 +62,8 @@ class Manager
 	
 	std::string status;
 
+	std::string clipboard;
+
 
 	/**
 	 * Find an interator for a window
@@ -220,6 +222,27 @@ public:
 	 * @param s the new status
 	 */
 	void SetStatus(const char* s);
+
+	/**
+	 * Get the contents of the clipboard
+	 *
+	 * @return the contents of the clipboard
+	 */
+	inline const char* Clipboard(void) { return clipboard.c_str(); }
+
+	/**
+	 * Set the contents of the clipboard
+	 *
+	 * @param s the new contents of the clipboard
+	 */
+	inline void SetClipboard(const char* s) { clipboard = s; }
+
+	/**
+	 * Set the contents of the clipboard
+	 *
+	 * @param s the new contents of the clipboard
+	 */
+	inline void SetClipboard(const std::string& s) { clipboard = s; }
 };
 
 extern Manager wm;

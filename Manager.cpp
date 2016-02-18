@@ -62,6 +62,8 @@ void SigWinChHandler(int sig)
 Manager::Manager(void)
 {
 	initialized = false;
+
+	clipboard = "";
 }
 
 

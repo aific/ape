@@ -36,6 +36,7 @@
 #include "Editor.h"
 
 #include "Container.h"
+#include "Manager.h"
 #include "Window.h"
 
 
@@ -92,7 +93,6 @@ Editor::Editor(Container* parent, bool _multiline, int _row, int _col, int rows,
 	colStart = 0;
 	
 	selection = false;
-	clipboard = "";
 	highlightPattern = "";
 	
 	
@@ -1235,7 +1235,8 @@ void Editor::Copy(void)
 	int selIdx = doc->StringPosition(selRow, selCol);
 	int idx = doc->StringPosition(row, actualCol);
 	
-	clipboard = doc->Get(row, idx, selRow, selIdx);
+	std::string s = doc->Get(row, idx, selRow, selIdx).c_str();
+	wm.SetClipboard(s);
 }
 
 
@@ -1265,7 +1266,7 @@ void Editor::Cut(void)
  */
 void Editor::Paste(void)
 {
-	if (clipboard == "") return;
+	if (wm.Clipboard()[0] == '\0') return;
 	
 	doc->FinalizeEditAction();
 	
@@ -1277,7 +1278,7 @@ void Editor::Paste(void)
 	
 	// Paste
 	
-	const char* str = clipboard.c_str();
+	const char* str = wm.Clipboard();
 	int pos = doc->StringPosition(row, actualCol);
 	doc->InsertString(row, pos, str);
 	
