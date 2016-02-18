@@ -239,7 +239,7 @@ void EditorWindow::OnKeyPressed(int key)
 		FileDialog* d = new FileDialog(this, FILE_DIALOG_OPEN, "Open");
 		if (d->Run()) {
 			// TODO
-			EditorWindow* w = new EditorWindow(1, 1, 60, 20);
+			EditorWindow* w = new EditorWindow(1, 1, 20, 64);
 			ReturnExt r = w->LoadFromFile(d->Path().c_str());
 			if (!r) {
 				w->Close();

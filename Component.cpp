@@ -53,6 +53,9 @@
 Component::Component(Container* _parent, bool _focusable, int _row, int _col,
 		int _rows, int _cols, int _anchor)
 {
+	assert(_rows > 0);
+	assert(_cols > 0);
+
 	parent = _parent;
 	canReceiveFocus = _focusable;
 
