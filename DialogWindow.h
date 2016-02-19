@@ -107,7 +107,7 @@ protected:
 	 * Center the window relative to the parent (or to the screen if there is
 	 * no parent)
 	 */
-	void Center(void);
+	virtual void Center(void);
 };
 
 

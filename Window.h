@@ -111,6 +111,11 @@ protected:
 	virtual void PaintFrame(void);
 
 	/**
+	 * Center the window
+	 */
+	virtual void Center(void);
+
+	/**
 	 * An event handler for pressing a key
 	 *
 	 * @param key the key code
@@ -171,7 +176,7 @@ public:
 	 *
 	 * @return the title of the window
 	 */
-	inline const char* Title(void) { return title; }
+	inline const char* Title(void) const { return title; }
 
 	/**
 	 * Set the title of the window

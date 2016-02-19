@@ -232,6 +232,12 @@ void Manager::Paint(void)
 		}
 	}
 
+	if (windowSwitcher != NULL) {
+		windowSwitcher->Paint();
+		tcw->OutBuffer(windowSwitcher->Row(), windowSwitcher->Column(),
+				windowSwitcher->TcwBuffer());
+	}
+
 	for (int i = 0; i < menuWindows.size(); i++) {
 		if (menuWindows[i]->Visible()) {
 			menuWindows[i]->Paint();
@@ -252,7 +258,8 @@ void Manager::Add(Window* w)
 	Window* l = windows.empty() ? NULL : windows[windows.size() - 1];
 	if (l != NULL) l->NotifyInactive();
 
-	windows.push_back(w);
+	if (w != windowSwitcher) windows.push_back(w);
+
 	w->SetVisible(true);
 	w->NotifyActive();
 }
@@ -267,12 +274,14 @@ void Manager::Close(Window* w)
 {
 	std::vector<Window*>::iterator i = Find(w);
 
-	if (i != windows.end()) {
+	if (i != windows.end() || w == windowSwitcher) {
 
 		w->NotifyInactive();
 		w->wmMode = WM_CLOSED;
 
-		windows.erase(i);
+		if (i != windows.end()) windows.erase(i);
+		if (w == windowSwitcher) windowSwitcher = NULL;
+
 		zombies.push_back(w);
 
 		Window* l = windows.empty() ? NULL : windows[windows.size() - 1];
@@ -315,7 +324,7 @@ void Manager::CloseMenus(int code)
 	menuWindows.clear();
 
 	Window* p = w->Parent();
-	if (p != NULL) p->OnWindowMenu(code);
+	if (p != NULL && code >= 0) p->OnWindowMenu(code);
 }
 
 
@@ -441,7 +450,8 @@ void Manager::Raise(Window* w)
  */
 Window* Manager::Top(void)
 {
-	if (!menuWindows.empty()) return menuWindows[menuWindows.size() - 1];
+	if (!menuWindows.empty()  ) return menuWindows[menuWindows.size() - 1];
+	if (windowSwitcher != NULL) return windowSwitcher;
 	return windows.empty() ? NULL : windows[windows.size() - 1];
 }
 
@@ -666,6 +676,14 @@ void Manager::ProcessMessages(void)
 			}
 
 			if (key == KEY_CTRL('q')) std::exit(0);
+
+			if (key == KEY_F(2)) {
+				if (windowSwitcher == NULL) {
+					windowSwitcher = new WindowSwitcher();
+					CloseMenus(-1);
+					Add(windowSwitcher);
+				}
+			}
 
 
 			// Otherwise pass the event to the topmost window

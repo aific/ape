@@ -78,7 +78,7 @@ void DialogWindow::Center(void)
 {
 	Window* parent = DialogParent();
 	if (parent == NULL) {
-		Move((wm.Rows() - Rows()) / 2, (wm.Columns() - Columns()) / 2);
+		Window::Center();
 	}
 	else {
 		Move(parent->Row() + (parent->Rows() - Rows()) / 2,

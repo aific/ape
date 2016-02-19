@@ -39,6 +39,7 @@
 
 #include "MenuWindow.h"
 #include "Window.h"
+#include "WindowSwitcher.h"
 
 
 /**
@@ -56,6 +57,7 @@ class Manager
 	std::vector<Window*> windows;
 	std::vector<Window*> zombies;
 	std::vector<MenuWindow*> menuWindows;
+	WindowSwitcher* windowSwitcher;
 
 	WINDOW* win;
 	TerminalControlWindow* tcw;
@@ -146,6 +148,13 @@ public:
 	 * @param w the window
 	 */
 	void Close(Window* w);
+
+	/**
+	 * Return the collection of all regular windows
+	 *
+	 * @return a reference to the vector of windows
+	 */
+	inline const std::vector<Window*>& Windows(void) { return windows; }
 
 	/**
 	 * Open a menu window

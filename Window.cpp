@@ -155,6 +155,16 @@ void Window::PaintFrame(void)
 
 
 /**
+ * Center the window relative to the parent (or to the screen if there is
+ * no parent)
+ */
+void Window::Center(void)
+{
+	Move((wm.Rows() - Rows()) / 2, (wm.Columns() - Columns()) / 2);
+}
+
+
+/**
  * Set the title of the window
  *
  * @param _title the new title of the window
