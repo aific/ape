@@ -83,6 +83,11 @@ bool FileDialog::Run(void)
 	returnValue = false;
 	wm.Add(this);
 
+	// TODO What if we have two dialogs at the same time??? I really need to
+	// handle this differently -- either have at most one outstanding Run(),
+	// I need to go multi-threaded, or I need to use continuations. That's a
+	// lot of work.
+
 	while (Mode() != WM_CLOSED) {
 		usleep(20 * 1000);
 		wm.ProcessMessages();

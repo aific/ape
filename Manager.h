@@ -63,8 +63,10 @@ class Manager
 	TerminalControlWindow* tcw;
 	
 	std::string status;
-
 	std::string clipboard;
+
+	int processMessagesDepth;
+	Window* openDialog;
 
 
 	/**

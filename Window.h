@@ -211,6 +211,13 @@ public:
 	 * @return WM_NORMAL, WM_MOVE, or WM_RESIZE (or WM_CLOSED if closed)
 	 */
 	inline int Mode(void) { return wmMode; }
+
+	/**
+	 * Determine if this is a dialog window
+	 *
+	 * @return true if this is a dialog window
+	 */
+	virtual bool Dialog(void) { return false; }
 };
 
 #endif

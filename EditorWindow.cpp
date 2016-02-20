@@ -234,23 +234,6 @@ void EditorWindow::OnKeyPressed(int key)
 		}
 	}
 
-	else if (key == KEY_CTRL('o')) {
-
-		FileDialog* d = new FileDialog(this, FILE_DIALOG_OPEN, "Open");
-		if (d->Run()) {
-			// TODO
-			EditorWindow* w = new EditorWindow(1, 1, 20, 64);
-			ReturnExt r = w->LoadFromFile(d->Path().c_str());
-			if (!r) {
-				w->Close();
-				Dialogs::Error(this, r);
-			}
-			else {
-				wm.Add(w);
-			}
-		}
-	}
-
 	else if (key == KEY_CTRL('s')) {
 
 		if (editor->Document()->FileName() == NULL) {

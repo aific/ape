@@ -151,6 +151,13 @@ public:
 	 */
 	DialogButton Run(void);
 
+	/**
+	 * Determine if this is a dialog window
+	 *
+	 * @return true if this is a dialog window
+	 */
+	virtual bool Dialog(void) { return true; }
+
 
 protected:
 

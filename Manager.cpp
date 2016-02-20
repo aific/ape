@@ -42,6 +42,10 @@
 #include <util.h>
 #endif
 
+#include "DialogWindow.h"
+#include "EditorWindow.h"
+#include "FileDialog.h"
+
 Manager wm;
 
 
@@ -62,6 +66,9 @@ void SigWinChHandler(int sig)
 Manager::Manager(void)
 {
 	initialized = false;
+
+	processMessagesDepth = 0;
+	openDialog = NULL;
 
 	clipboard = "";
 }
@@ -595,6 +602,7 @@ void Manager::TerminalResized(void)
 void Manager::ProcessMessages(void)
 {
 	int key;
+	processMessagesDepth++;
 
 	Refresh(); // XXX Do I really have to do this?
 
@@ -683,6 +691,41 @@ void Manager::ProcessMessages(void)
 					CloseMenus(-1);
 					Add(windowSwitcher);
 				}
+				else {
+					if (windowSwitcher->Transient()) {
+						// TODO Make it not transient? Or just kill the timer?
+					}
+					else {
+						windowSwitcher->Close();
+					}
+				}
+			}
+
+			else if (key == KEY_CTRL('o')) {
+
+				if (windowSwitcher != NULL) windowSwitcher->Close();
+				CloseMenus(-1);
+
+				if (openDialog != NULL) {
+					openDialog->Raise();
+				}
+				else {
+					FileDialog* d = new FileDialog(NULL, FILE_DIALOG_OPEN, "Open");
+					openDialog = d;
+					if (d->Run()) {
+						// TODO Window placement
+						EditorWindow* w = new EditorWindow(1, 1, 20, 64);
+						ReturnExt r = w->LoadFromFile(d->Path().c_str());
+						if (!r) {
+							w->Close();
+							Dialogs::Error(NULL, r);
+						}
+						else {
+							wm.Add(w);
+						}
+					}
+					openDialog = NULL;
+				}
 			}
 
 
@@ -700,6 +743,11 @@ void Manager::ProcessMessages(void)
 	if (Top() != NULL) {
 		Top()->OnStep();
 	}
+
+
+	// Finish
+	
+	processMessagesDepth--;
 }
 
 
