@@ -45,12 +45,14 @@
  */
 WindowSwitcher::WindowSwitcher(bool transient)
 	: DialogWindow(NULL, transient ? "" : "Windows", 1, 1,
-			2 + std::min((int) wm.Windows().size(), (wm.Rows() - 2) * 4 / 3))
+			2 + std::max(1, std::min((int) wm.Windows().size(),
+			                         (wm.Rows() - 2) * 4 / 3)))
 {
 	this->transient = transient;
 
 	windowList = new List<WindowSwitcherItem>(this, !transient /* sorted */,
 			0, 0, ClientRows(), ClientColumns(), ANCHOR_ALL);
+	windowList->RegisterEventHandler(this);
 
 	const std::vector<Window*>& windows = wm.Windows();
 	for (ssize_t i = ((ssize_t) windows.size()) - 1; i >= 0; i--) {
@@ -60,6 +62,11 @@ WindowSwitcher::WindowSwitcher(bool transient)
 		windowList->SetCursor(
 				windowList->Find(WindowSwitcherItem(windows[windows.size()-1])));
 	}
+	if (windows.size() < 2) {
+		windowList->SetScrollBar(NULL);
+	}
+
+	windowList->SetMinSize(std::min((int) windows.size(), 2), 10);
 
 	Center();
 
@@ -75,5 +82,38 @@ WindowSwitcher::WindowSwitcher(bool transient)
  */
 WindowSwitcher::~WindowSwitcher(void)
 {
+}
+
+
+/**
+ * An event handler for an action
+ *
+ * @param sender the sender
+ */
+void WindowSwitcher::OnAction(Component* sender)
+{
+	if (sender == windowList) {
+		if (windowList->Size() > 0 && windowList->Cursor() >= 0) {
+			WindowSwitcherItem& item = windowList->Item(windowList->Cursor());
+			item.Value()->Raise();
+		}
+		Close();
+	}
+}
+
+
+/**
+ * An event handler for pressing a key
+ *
+ * @param key the key code
+ */
+void WindowSwitcher::OnKeyPressed(int key)
+{
+	if (key == KEY_ESC) {
+		Close();
+		return;
+	}
+
+	DialogWindow::OnKeyPressed(key);
 }
 

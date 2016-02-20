@@ -86,7 +86,7 @@ AbstractList::AbstractList(Container* parent, bool _sorted,
 	
 	// Set the component properties
 	
-	SetMinSize(2, 10);
+	SetMinSize(1, 10);
 	
 	
 	// Set the cursor position

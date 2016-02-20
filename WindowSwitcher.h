@@ -35,8 +35,9 @@
 #ifndef __WINDOW_SWITCHER_H
 #define __WINDOW_SWITCHER_H
 
-#include "List.h"
 #include "DialogWindow.h"
+#include "Events.h"
+#include "List.h"
 
 
 /**
@@ -167,7 +168,7 @@ inline std::ostream& operator<< (std::ostream& out, const WindowSwitcherItem& it
  *
  * @author Peter Macko
  */
-class WindowSwitcher : public DialogWindow
+class WindowSwitcher : public DialogWindow, protected EventHandler
 {
 	List<WindowSwitcherItem>* windowList;
 	bool transient;
@@ -193,6 +194,23 @@ public:
 	 * @return true if it is transient
 	 */
 	inline bool Transient() const { return transient; }
+
+
+protected:
+
+	/**
+	 * An event handler for an action
+	 *
+	 * @param sender the sender
+	 */
+	virtual void OnAction(Component* sender);
+
+	/**
+	 * An event handler for pressing a key
+	 *
+	 * @param key the key code
+	 */
+	virtual void OnKeyPressed(int key);
 };
 
 #endif

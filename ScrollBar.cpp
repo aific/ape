@@ -113,7 +113,7 @@ void ScrollBar::SetLocation(int _row, int _col)
  */
 void ScrollBar::SetLength(int len)
 {
-	length = len < 3 ? 3 : len;
+	length = len < 2 ? 2 : len;
 }
 
 
@@ -152,13 +152,15 @@ void ScrollBar::Paint(void)
 	
 	// Paint the position bar
 
-	tcw->SetColor(barbg, barfg);
+	if (length > 2) {
+		tcw->SetColor(barbg, barfg);
 
-	if (horiz) {
-		tcw->OutHorizontalLine(row, col + 1 + bpos, bsize, ACS_CKBOARD);
-	}
-	else {
-		tcw->OutVerticalLine(row + 1 + bpos, col, bsize, ACS_CKBOARD);
+		if (horiz) {
+			tcw->OutHorizontalLine(row, col + 1 + bpos, bsize, ACS_CKBOARD);
+		}
+		else {
+			tcw->OutVerticalLine(row + 1 + bpos, col, bsize, ACS_CKBOARD);
+		}
 	}
 }
 
