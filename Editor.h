@@ -131,6 +131,11 @@ class Editor : public Component
 	void MoveCursorVeryLeft(void);
 	
 	/**
+	 * Move the cursor to the beginning of the line
+	 */
+	void MoveCursorToTheBeginningOfTheLine(void);
+	
+	/**
 	 * Move the cursor to the very right
 	 */
 	void MoveCursorVeryRight(void);
@@ -376,5 +381,6 @@ public:
 };
 
 #endif
+
 
 

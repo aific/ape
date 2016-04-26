@@ -917,6 +917,54 @@ void Editor::MoveCursorVeryLeft(void)
 }
 
 
+
+/**
+ * Move the cursor to the beginning of the line
+ */
+void Editor::MoveCursorToTheBeginningOfTheLine(void)
+{
+	bool needsPaint = EnsureValidScroll();
+	
+	
+	// TODO Determine the position of the first non-blank character of the line
+	
+	int firstNonBlank = 0;
+	const char* line = doc->Line(row);
+	for (const char* p = line; *p != '\0'; p++) {
+		if (*p == ' ') {
+			firstNonBlank++;
+		}
+		else if (*p == '\t') {
+			firstNonBlank = (firstNonBlank / tabSize) * tabSize + tabSize;
+		}
+		else {
+			break;
+		}
+	}
+	
+	
+	// Move the cursor appropriately
+	
+	if (col == firstNonBlank || actualCol == firstNonBlank) {
+		col = 0;
+	}
+	else {
+		col = firstNonBlank;
+	}
+	
+	
+	// Take care of scrolling
+	
+	if (colStart > col) {
+		colStart = col;
+		needsPaint = true;
+	}
+	
+	if (needsPaint) Paint();
+	UpdateCursor();
+}
+
+
 /**
  * Move the cursor to the very right
  */
@@ -1545,7 +1593,7 @@ void Editor::OnKeyPressed(int key)
 	
 	if (key == KEY_HOME) {
 		doc->FinalizeEditAction();
-		MoveCursorVeryLeft();
+		MoveCursorToTheBeginningOfTheLine();
 		return;
 	}
 	
@@ -1763,6 +1811,7 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
 
 
 
