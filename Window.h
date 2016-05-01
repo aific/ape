@@ -218,6 +218,21 @@ public:
 	 * @return true if this is a dialog window
 	 */
 	virtual bool Dialog(void) { return false; }
+
+	/**
+	 * Determine if this is a menu window
+	 *
+	 * @return true if this is a menu window
+	 */
+	virtual bool Menu(void) { return false; }
+
+	/**
+	 * Determine if this is a regular window
+	 *
+	 * @return true if this is a regular window
+	 */
+	virtual bool Regular(void) { return !Dialog() && !Menu(); }
 };
 
 #endif
+

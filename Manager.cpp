@@ -686,20 +686,35 @@ void Manager::ProcessMessages(void)
 			if (key == KEY_CTRL('q')) std::exit(0);
 
 			if (key == KEY_F(2)) {
-				if (windowSwitcher == NULL) {
-					windowSwitcher = new WindowSwitcher();
-					CloseMenus(-1);
-					Add(windowSwitcher);
-				}
-				else {
-					if (windowSwitcher->Transient()) {
-						// TODO Make it not transient? Or just kill the timer?
+				Window* w = Top();
+				if (w != NULL && w->Regular()) {
+					fprintf(stderr, "%s %d %d", w->Title(), w->Dialog(), w->Regular());
+					if (windowSwitcher == NULL) {
+						windowSwitcher = new WindowSwitcher();
+						CloseMenus(-1);
+						Add(windowSwitcher);
 					}
 					else {
-						windowSwitcher->Close();
+						if (windowSwitcher->Transient()) {
+							// TODO Make it not transient? Or just kill the timer?
+						}
+						else {
+							windowSwitcher->Close();
+						}
 					}
 				}
 			}
+
+			/*else if (key == KEY_F(12)) {
+				if (windowSwitcher == NULL) {
+					windowSwitcher = new WindowSwitcher(true);
+					//CloseMenus(-1);
+					Add(windowSwitcher);
+				}
+				else {
+					// TODO Switch to the next window
+				}
+			}*/
 
 			else if (key == KEY_CTRL('o')) {
 
@@ -761,3 +776,5 @@ void Manager::SetStatus(const char* s)
 	status = s;
 	PaintStatus();
 }
+
+

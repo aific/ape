@@ -115,6 +115,7 @@ protected:
 	 * @param key the key code
 	 */
 	virtual void OnKeyPressed(int key);
+
 	
 public:
 	
@@ -204,6 +205,14 @@ public:
 	 * @return the parent window
 	 */
 	Window* Parent(void);
+
+	/**
+	 * Determine if this is a menu window
+	 *
+	 * @return true if this is a menu window
+	 */
+	virtual bool Menu(void) { return true; }
 };
 
 #endif
+

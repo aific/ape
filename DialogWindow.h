@@ -100,6 +100,13 @@ public:
 	 */
 	inline Window* DialogParent(void) { return parentWindow; }
 
+	/**
+	 * Determine if this is a dialog window
+	 *
+	 * @return true if this is a dialog window
+	 */
+	virtual bool Dialog(void) { return true; }
+
 
 protected:
 
@@ -150,13 +157,6 @@ public:
 	 *         closed
 	 */
 	DialogButton Run(void);
-
-	/**
-	 * Determine if this is a dialog window
-	 *
-	 * @return true if this is a dialog window
-	 */
-	virtual bool Dialog(void) { return true; }
 
 
 protected:
