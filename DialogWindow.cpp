@@ -59,6 +59,11 @@ DialogWindow::DialogWindow(Window* parent, const char* title, int row, int col,
 
 	allowResize = false;
 	allowMaximize = false;
+
+
+	// Default settings
+	
+	escCancels = true;
 }
 
 
@@ -83,6 +88,34 @@ void DialogWindow::Center(void)
 	else {
 		Move(parent->Row() + (parent->Rows() - Rows()) / 2,
 		     parent->Column() + (parent->Columns() - Columns()) / 2);
+	}
+}
+
+
+/**
+ * Cancel the dialog
+ */
+void DialogWindow::Cancel(void)
+{
+	Close();
+}
+
+
+/**
+ * An event handler for pressing a key
+ *
+ * @param key the key code
+ */
+void DialogWindow::OnKeyPressed(int key)
+{
+	if (escCancels && key == KEY_ESC) {
+
+		Cancel();
+	}
+
+	else {
+
+		Window::OnKeyPressed(key);
 	}
 }
 
@@ -188,6 +221,14 @@ void SimpleDialogWindow::Init(DialogType type, const char* title,
 
 	// Finish
 
+	escCancels = false;
+	for (size_t i = 0; i < dialogButtons.size(); i++) {
+		if (dialogButtons[i] == DIALOG_BUTTON_CANCEL) {
+			escCancels = true;
+			break;
+		}
+	}
+
 	Center();
 }
 
@@ -230,6 +271,16 @@ DialogButton SimpleDialogWindow::Run(void)
 	}
 
 	return returnCode;
+}
+
+
+/**
+ * Cancel the dialog
+ */
+void SimpleDialogWindow::Cancel(void)
+{
+	returnCode = DIALOG_BUTTON_CANCEL;
+	DialogWindow::Cancel();
 }
 
 

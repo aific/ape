@@ -73,6 +73,11 @@ class DialogWindow : public Window
 	Window* parentWindow;
 
 
+protected:
+
+	bool escCancels;
+
+
 public:
 	
 	/**
@@ -107,6 +112,11 @@ public:
 	 */
 	virtual bool Dialog(void) { return true; }
 
+	/**
+	 * Cancel the dialog
+	 */
+	virtual void Cancel(void);
+
 
 protected:
 
@@ -115,6 +125,13 @@ protected:
 	 * no parent)
 	 */
 	virtual void Center(void);
+
+	/**
+	 * An event handler for pressing a key
+	 *
+	 * @param key the key code
+	 */
+	virtual void OnKeyPressed(int key);
 };
 
 
@@ -157,6 +174,11 @@ public:
 	 *         closed
 	 */
 	DialogButton Run(void);
+
+	/**
+	 * Cancel the dialog
+	 */
+	virtual void Cancel(void);
 
 
 protected:

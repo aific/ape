@@ -688,7 +688,6 @@ void Manager::ProcessMessages(void)
 			if (key == KEY_F(2)) {
 				Window* w = Top();
 				if (w != NULL && w->Regular()) {
-					fprintf(stderr, "%s %d %d", w->Title(), w->Dialog(), w->Regular());
 					if (windowSwitcher == NULL) {
 						windowSwitcher = new WindowSwitcher();
 						CloseMenus(-1);
