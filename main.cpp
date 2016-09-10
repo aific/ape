@@ -172,10 +172,11 @@ int main(int argc, char * const argv[])
 	wm.Refresh();
 
 	for (;;) {
-		usleep(20 * 1000);
+		usleep(5 * 1000);
 		wm.ProcessMessages();
 	}
 
 	sigint(0);
 	return 0;
 }
+

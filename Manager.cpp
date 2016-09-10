@@ -748,6 +748,11 @@ void Manager::ProcessMessages(void)
 			if (Top() != NULL) {
 				Top()->OnKeyPressed(key);
 			}
+			
+			
+			// Refresh
+			
+			Refresh();
 		}
 	}
 
@@ -775,5 +780,6 @@ void Manager::SetStatus(const char* s)
 	status = s;
 	PaintStatus();
 }
+
 
 

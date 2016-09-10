@@ -214,11 +214,28 @@ ReturnExt EditorDocument::SaveToFile(const char* file, bool switchFile)
 
 		if (modified) {
 			modified = false;
-
-			// TODO Fix the undo and redo logs instead of clearing them
 			
-			while (!undo.empty()) { delete undo.back(); undo.pop_back(); }
-			while (!redo.empty()) { delete redo.back(); redo.pop_back(); }
+			for (std::deque<UndoEntry*>::iterator it = undo.begin();
+			    it != undo.end();
+			    it++) {
+				(*it)->modified = true;
+				(*it)->redo_modified = true;
+			}
+			
+			for (std::deque<UndoEntry*>::iterator it = redo.begin();
+			    it != redo.end();
+			    it++) {
+				(*it)->modified = true;
+				(*it)->redo_modified = true;
+			}
+			
+			if (!undo.empty()) {
+				undo.back()->redo_modified = false;
+			}
+			
+			if (!redo.empty()) {
+				redo.back()->modified = false;
+			}
 			
 			if (currentUndo != NULL) delete currentUndo;
 			currentUndo = NULL;
@@ -922,3 +939,4 @@ void EditorDocument::FinalizeEditAction(void)
 	undo.push_back(currentUndo);
 	currentUndo = NULL;
 }
+
