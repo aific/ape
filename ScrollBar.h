@@ -114,6 +114,21 @@ public:
 	 * Paint the scroll bar
 	 */
 	void Paint(void);
+
+	/**
+	 * Set the background color
+	 *
+	 * @param color the new background color
+	 */
+	void SetBGColor(int color);
+
+	/**
+	 * Set the foreground color
+	 *
+	 * @param color the new foreground color
+	 */
+	void SetFGColor(int color);
 };
 
 #endif
+

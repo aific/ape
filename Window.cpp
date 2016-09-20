@@ -86,6 +86,7 @@ Window::Window(const char* _title, int _row, int _col, int _rows, int _cols,
 
 	SetVisible(false);
 
+	inactiveFrameColor = 4;
 	hasFrame = true;
 	
 	windowMenu = NULL;
@@ -132,7 +133,7 @@ void Window::UseFrameStyle(void)
 			break;
 
 		default:
-			tcw->SetColor(bg, Active() ? fg : 4);
+			tcw->SetColor(bg, Active() ? fg : inactiveFrameColor);
 			break;
 	}
 }
@@ -419,4 +420,5 @@ void Window::OnWindowMenu(int code)
 		return;
 	}
 }
+
 

@@ -59,10 +59,10 @@ ScrollBar::ScrollBar(Component* _component, bool _horiz)
 	col = 0;
 	length = 3;
 	
-	bg = 6;
-	fg = 4;
-	barbg = 6;
-	barfg = 4;
+	bg = 0;
+	fg = 6;
+	barbg = 0;
+	barfg = 6;
 }
 
 
@@ -205,3 +205,28 @@ void ScrollBar::SetPosition(int _pos, int size)
 	
 	Paint();
 }
+
+
+/**
+ * Set the background color
+ *
+ * @param color the new background color
+ */
+void ScrollBar::SetBGColor(int color)
+{
+	bg = color;
+	barbg = color;
+}
+
+
+/**
+ * Set the foreground color
+ *
+ * @param color the new foreground color
+ */
+void ScrollBar::SetFGColor(int color)
+{
+	fg = color;
+	barfg = color;
+}
+

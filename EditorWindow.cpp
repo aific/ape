@@ -55,12 +55,19 @@ EditorWindow::EditorWindow(int row, int col, int rows, int cols)
 	: Window("Untitled", row, col, rows, cols, 4, 7)
 {
 	editor = NULL;
+	
+	inactiveFrameColor = 6;
 
 
 	// Add scroll bars
 	
 	AddScrollBar(true, 16, 3);
 	AddScrollBar(false, 2, 2);
+	
+	HorizScrollBar()->SetBGColor(6);
+	HorizScrollBar()->SetFGColor(4);
+	VertScrollBar()->SetBGColor(6);
+	VertScrollBar()->SetFGColor(4);
 
 
 	// Add the split pane
@@ -330,4 +337,5 @@ void EditorWindow::Refresh(void)
 	
 	Component::Refresh();
 }
+
 

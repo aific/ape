@@ -101,6 +101,11 @@ protected:
 	bool allowMaximize;
 
 	/**
+	 * The color of the window frame when inactive
+	 */
+	int inactiveFrameColor;
+
+	/**
 	 * Use the frame color and attributes
 	 */
 	void UseFrameStyle(void);
@@ -235,4 +240,5 @@ public:
 };
 
 #endif
+
 
