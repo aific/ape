@@ -35,6 +35,8 @@
 #include "stdafx.h"
 #include "Parser.h"
 
+#include <cctype>
+
 #include "Document.h"
 
 
@@ -63,6 +65,36 @@ ParserRule::ParserRule(ParserEnvironment* _environment, const char* _token,
  */
 ParserRule::~ParserRule()
 {
+}
+
+
+/**
+ * Determine if the rule matches the given string at the specified location
+ *
+ * @param line the line
+ * @param pos the position (character index) in the line
+ * @return true if it matches
+ */
+bool ParserRule::Matches(const char* line, unsigned pos)
+{
+	if (mustStartLine) {
+		for (unsigned i = 0; i < pos; i++) {
+			if (!isspace(line[i])) return false;
+		}
+	}
+	
+	size_t len = token.length();
+	if (strncmp(line + pos, token.c_str(), len) != 0) {
+		return false;
+	}
+	
+	if (mustEndLine) {
+		for (const char* p = line + pos + len; *p != '\0'; p++) {
+			if (!isspace(*p)) return false;
+		}
+	}
+	
+	return true;
 }
 
 
@@ -114,6 +146,31 @@ void ParserEnvironment::AddRule(ParserRule* rule)
 
 
 /**
+ * Find a rule rule matches the given string at the specified location
+ *
+ * @param line the line
+ * @param pos the position (character index) in the line
+ * @return the matching rule, or NULL if none
+ */
+ParserRule* ParserEnvironment::FindMatchingRule(const char* line, unsigned pos)
+{
+	char c = line[pos];
+	if (c >= 127) c = 127;
+	
+	std::vector<ParserRule*>*& bucket = ruleTable[c];
+	if (bucket == NULL) return NULL;
+	
+	for (ParserRule* r : *bucket) {
+		if (r->Matches(line, pos)) {
+			return r;
+		}
+	}
+	
+	return NULL;
+}
+
+
+/**
  * Create a new parser state
  */
 ParserState::ParserState()
@@ -126,6 +183,27 @@ ParserState::ParserState()
  */
 ParserState::~ParserState()
 {
+}
+
+
+/**
+ * Clear the state
+ */
+void ParserState::Clear()
+{
+	environmentStack.clear();
+}
+
+
+/**
+ * Get the current environment
+ *
+ * @return the latest environment in the stack
+ */
+ParserEnvironment* ParserState::Environment()
+{
+	if (environmentStack.empty()) return NULL;
+	return environmentStack[environmentStack.size() - 1];
 }
 
 
@@ -167,6 +245,26 @@ void Parser::AddEnvironment(ParserEnvironment* environment)
  */
 void Parser::Parse(DocumentLine& line)
 {
-	// TODO
+	// TODO Do not always restart from the global environment
+	
+	ParserState initial;
+	initial.environmentStack.push_back(globalEnvironment);
+	
+	line.parserStates.clear();
+	
+	ParserState current = initial;
+	
+	for (unsigned i = 0; i <= line.str.length(); i++) {
+		ParserRule* r = current.Environment()->FindMatchingRule(line.str.c_str(), i);
+		
+		if (r != NULL) {
+			// Apply the rule
+		}
+		
+		if (i == 0 && r == NULL) {
+			line.parserStates.push_back(std::pair<unsigned, ParserState>(0, current));
+		}
+	}
 }
+
 

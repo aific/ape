@@ -41,6 +41,7 @@
 
 #include "EditAction.h"
 #include "Histogram.h"
+#include "Parser.h"
 
 class EditorDocument;
 
@@ -52,10 +53,12 @@ typedef struct _DocumentLine
 {
 	std::string str;
 	int displayLength;
+	std::vector<std::pair<unsigned, ParserState>> parserStates;
 	
 	_DocumentLine(void) {
 		str = std::string();
 		displayLength = 0;
+		parserStates.clear();
 	}
 	
 	_DocumentLine(const _DocumentLine& l) {
@@ -65,6 +68,7 @@ typedef struct _DocumentLine
 	_DocumentLine& operator=(const _DocumentLine& l) {
 		str = l.str;
 		displayLength = l.displayLength;
+		parserStates = l.parserStates;
 		return *this;
 	}
 	
@@ -151,6 +155,8 @@ class EditorDocument
 	UndoEntry* currentUndo;
 	std::deque<UndoEntry*> undo;
 	std::deque<UndoEntry*> redo;
+	
+	Parser* parser;
 	
 	
 	/**
@@ -443,3 +449,4 @@ public:
 };
 
 #endif
+

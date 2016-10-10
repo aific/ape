@@ -52,6 +52,11 @@ typedef struct _DocumentLine DocumentLine;
  */
 class ParserEnvironment;
 
+/*
+ * The parser
+ */
+class Parser;
+
 
 /**
  * A parser rule
@@ -85,6 +90,15 @@ public:
 	 * Destroy the rule
 	 */
 	virtual ~ParserRule();
+	
+	/**
+	 * Determine if the rule matches the given string at the specified location
+	 *
+	 * @param line the line
+	 * @param pos the position (character index) in the line
+	 * @return true if it matches
+	 */
+	virtual bool Matches(const char* line, unsigned pos);
 	
 	/**
 	 * Get the environment to which the rule applies
@@ -207,6 +221,15 @@ public:
 	 * @param rule the rule (will take ownership of the class)
 	 */
 	void AddRule(ParserRule* rule);
+	
+	/**
+	 * Find a rule rule matches the given string at the specified location
+	 *
+	 * @param line the line
+	 * @param pos the position (character index) in the line
+	 * @return the matching rule, or NULL if none
+	 */
+	ParserRule* FindMatchingRule(const char* line, unsigned pos);
 };
 
 
@@ -215,6 +238,8 @@ public:
  */
 class ParserState
 {
+	friend class Parser;
+	
 	std::vector<ParserEnvironment*> environmentStack;
 	
 	
@@ -229,6 +254,18 @@ public:
 	 * Destroy the parser state
 	 */
 	virtual ~ParserState();
+	
+	/**
+	 * Clear the state
+	 */
+	void Clear();
+	
+	/**
+	 * Get the current environment
+	 *
+	 * @return the latest environment in the stack
+	 */
+	ParserEnvironment* Environment();
 };
 
 
@@ -281,4 +318,5 @@ public:
 
 
 #endif
+
 

@@ -46,6 +46,25 @@ EditorDocument::EditorDocument(void)
 	currentUndo = NULL;
 	tabSize = 4;
 	
+	// TODO Move the parser creation somewhere else
+	
+	parser = new Parser();
+	
+	ParserEnvironment* global = new ParserEnvironment("global", 7);
+	parser->AddEnvironment(global);
+	
+	ParserEnvironment* preprocessor = new ParserEnvironment("preprocessor", 6);
+	parser->AddEnvironment(preprocessor);
+	
+	ParserRule* r;
+	r = new ParserRule(global, "#", false, preprocessor);
+	r->SetMustStartLine(true);
+	global->AddRule(r);
+	
+	r = new ParserRule(preprocessor, "", true, NULL);
+	r->SetMustEndLine(true);
+	preprocessor->AddRule(r);
+	
 	Clear();
 }
 
@@ -58,6 +77,8 @@ EditorDocument::~EditorDocument(void)
 	if (currentUndo != NULL) delete currentUndo;
 	while (!undo.empty()) { delete undo.back(); undo.pop_back(); }
 	while (!redo.empty()) { delete redo.back(); redo.pop_back(); }
+	
+	if (parser != NULL) delete parser;
 }
 
 
@@ -939,4 +960,5 @@ void EditorDocument::FinalizeEditAction(void)
 	undo.push_back(currentUndo);
 	currentUndo = NULL;
 }
+
 
