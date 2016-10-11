@@ -257,14 +257,42 @@ void Parser::Parse(DocumentLine& line)
 	for (unsigned i = 0; i <= line.str.length(); i++) {
 		ParserRule* r = current.Environment()->FindMatchingRule(line.str.c_str(), i);
 		
+
+		// Apply the rule, if found
+		
 		if (r != NULL) {
-			// Apply the rule
+			
+			ParserEnvironment* open = r->OpensEnvironment();
+			bool close = r->ClosesCurrentEnvironment();
+			
+			if (open != NULL) {
+				current.environmentStack.push_back(open);
+				line.parserStates.push_back(std::pair<unsigned, ParserState>(i, current));
+			}
+			
+			if (close)  {
+			
+				size_t l = strlen(r->Token());
+				i += l;
+				if (i > 0 && l > 0) i--;
+				
+				l = current.environmentStack.size();
+				if (l > 0) {
+					current.environmentStack.pop_back();
+				}
+				if (l <= 1) {
+					current.environmentStack.push_back(globalEnvironment);
+				}
+				
+				line.parserStates.push_back(std::pair<unsigned, ParserState>(i, current));
+			}
 		}
 		
 		if (i == 0 && r == NULL) {
-			line.parserStates.push_back(std::pair<unsigned, ParserState>(0, current));
+			line.parserStates.push_back(std::pair<unsigned, ParserState>(i, current));
 		}
 	}
 }
+
 
 

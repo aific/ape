@@ -72,6 +72,10 @@ typedef struct _DocumentLine
 		return *this;
 	}
 	
+	void ClearParsing(void) {
+		parserStates.clear();
+	}
+	
 } DocumentLine;
 
 
@@ -276,6 +280,17 @@ public:
 	}
 	
 	/**
+	 * Return the line object
+	 * 
+	 * @param line the line number
+	 * @return the line
+	 */
+	inline DocumentLine* LineObject(int line)
+	{
+		return line >= lines.size() ? NULL : &lines[line];
+	}
+	
+	/**
 	 * Return a line relative to the page start
 	 * 
 	 * @param line the line number relative to the page start
@@ -446,7 +461,15 @@ public:
 	 * Finalize an edit action (for undo purposes)
 	 */
 	void FinalizeEditAction(void);
+	
+	/**
+	 * Get the associated parser
+	 *
+	 * @return the parser, or NULL if none
+	 */
+	inline Parser* DocumentParser(void) { return parser; }
 };
 
 #endif
+
 

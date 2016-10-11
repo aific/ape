@@ -250,6 +250,7 @@ void Editor::PaintLine(int line)
 	//assert(colStart >= 0);
 	if (colStart < 0) colStart = 0;
 
+	DocumentLine* objLine = doc->LineObject(line);
 	const char* strLine = doc->Line(line);
 	size_t lineLength = strlen(strLine);
 	tcw->SetCursor(top + line - doc->PageStart(), left);
@@ -280,6 +281,21 @@ void Editor::PaintLine(int line)
 		start++;
 		length--;
 	}*/
+	
+	
+	// Make sure that the line is parsed, so that we can do syntax highlighting
+	
+	// TODO Make sure all of the previous lines are parsed
+	
+	Parser* parser = doc->DocumentParser();
+	if (parser != NULL && objLine != NULL) {
+		parser->Parse(*objLine);
+	}
+	else {
+		if (objLine != NULL) {
+			objLine->ClearParsing();
+		}
+	}
 
 
 	// Figure out the highlighting
@@ -288,6 +304,18 @@ void Editor::PaintLine(int line)
 	for (size_t i = 0; i < lineLength; i++) {
 		charColors[i].first = BGColor();
 		charColors[i].second = FGColor();
+	}
+	
+	if (parser != NULL && objLine != NULL && !objLine->parserStates.empty()) {
+		size_t stateIndex = 0;
+		for (size_t i = 0; i < lineLength; i++) {
+			while (stateIndex + 1 < objLine->parserStates.size()
+			    && objLine->parserStates[stateIndex + 1].first <= i) stateIndex++;
+			ParserEnvironment* env = objLine->parserStates[stateIndex].second.Environment();
+			if (env != NULL) {
+				charColors[i].second = env->Color();
+			}
+		}
 	}
 
 	if (highlightPattern != "") {
@@ -1811,7 +1839,4 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
-
-
-
 
