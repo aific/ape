@@ -53,12 +53,17 @@ typedef struct _DocumentLine
 {
 	std::string str;
 	int displayLength;
+	
+	// Key: Character offset, Value: The parser state
 	std::vector<std::pair<unsigned, ParserState>> parserStates;
+	ParserState initialParserState;
+	bool validParse;
 	
 	_DocumentLine(void) {
 		str = std::string();
 		displayLength = 0;
 		parserStates.clear();
+		validParse = false;
 	}
 	
 	_DocumentLine(const _DocumentLine& l) {
@@ -69,11 +74,29 @@ typedef struct _DocumentLine
 		str = l.str;
 		displayLength = l.displayLength;
 		parserStates = l.parserStates;
+		initialParserState = l.initialParserState;
+		validParse = l.validParse;
 		return *this;
 	}
 	
 	void ClearParsing(void) {
 		parserStates.clear();
+		validParse = false;
+	}
+	
+	/**
+	 * Check if the last parser state of the given line matches the initial parser
+	 * state of this line
+	 *
+	 * @param other the other state
+	 * @return true if they match
+	 */
+	inline bool ParserStateFollows(const _DocumentLine* other) const {
+		if (other == NULL) return false;
+		if (parserStates.empty()) return false;
+		if (other->parserStates.empty()) return false;
+		return initialParserState
+			== other->parserStates[other->parserStates.size()-1].second;
 	}
 	
 } DocumentLine;
@@ -471,5 +494,7 @@ public:
 };
 
 #endif
+
+
 
 

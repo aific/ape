@@ -266,6 +266,25 @@ public:
 	 * @return the latest environment in the stack
 	 */
 	ParserEnvironment* Environment();
+	
+	/**
+	 * Compare this parser state to another state
+	 *
+	 * @param other the other state
+	 * @return true if they are the equal
+	 */
+	 bool operator== (const ParserState& other) const;
+	
+	/**
+	 * Compare this parser state to another state
+	 *
+	 * @param other the other state
+	 * @return true if they are the not equal
+	 */
+	 inline bool operator!= (const ParserState& other) const
+	 {
+	 	return !(*this == other);
+	 }
 };
 
 
@@ -312,8 +331,9 @@ public:
 	 * Parse the next line
 	 *
 	 * @param line the document line
+	 * @param previous the previous line, or NULL if not applicable
 	 */
-	void Parse(DocumentLine& line);
+	void Parse(DocumentLine& line, const DocumentLine* previous);
 };
 
 

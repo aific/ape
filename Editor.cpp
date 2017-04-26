@@ -284,12 +284,22 @@ void Editor::PaintLine(int line)
 	
 	
 	// Make sure that the line is parsed, so that we can do syntax highlighting
-	
-	// TODO Make sure all of the previous lines are parsed
-	
+
 	Parser* parser = doc->DocumentParser();
 	if (parser != NULL && objLine != NULL) {
-		parser->Parse(*objLine);
+	
+		// Make sure all of the previous lines are also parsed
+		
+		for (int l = 0; l <= line; l++) {
+			if (!doc->LineObject(l)->validParse
+				|| (l > 0 && doc->LineObject(l)->ParserStateFollows(doc->LineObject(l-1)))) {
+				for (int i = l; i <= line; i++) {
+					parser->Parse(*doc->LineObject(i),
+						i == 0 ? NULL : doc->LineObject(i-1));
+				}
+				break;
+			}
+		}
 	}
 	else {
 		if (objLine != NULL) {
@@ -1839,4 +1849,6 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
+
 

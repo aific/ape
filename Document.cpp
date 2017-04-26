@@ -49,14 +49,14 @@ EditorDocument::EditorDocument(void)
 	// TODO Move the parser creation somewhere else
 	
 	parser = new Parser();
+	ParserRule* r;
 	
 	ParserEnvironment* global = new ParserEnvironment("global", 7);
 	parser->AddEnvironment(global);
 	
-	ParserEnvironment* preprocessor = new ParserEnvironment("preprocessor", 6);
+	ParserEnvironment* preprocessor = new ParserEnvironment("preprocessor", 3);
 	parser->AddEnvironment(preprocessor);
 	
-	ParserRule* r;
 	r = new ParserRule(global, "#", false, preprocessor);
 	r->SetMustStartLine(true);
 	global->AddRule(r);
@@ -64,6 +64,51 @@ EditorDocument::EditorDocument(void)
 	r = new ParserRule(preprocessor, "", true, NULL);
 	r->SetMustEndLine(true);
 	preprocessor->AddRule(r);
+	
+	ParserEnvironment* singleLineComment = new ParserEnvironment("comment-sl", 6);
+	parser->AddEnvironment(singleLineComment);
+	
+	r = new ParserRule(global, "//", false, singleLineComment);
+	global->AddRule(r);
+	
+	r = new ParserRule(singleLineComment, "", true, NULL);
+	r->SetMustEndLine(true);
+	singleLineComment->AddRule(r);
+	
+	ParserEnvironment* multiLineComment = new ParserEnvironment("comment-ml", 6);
+	parser->AddEnvironment(multiLineComment);
+	
+	r = new ParserRule(global, "/*", false, multiLineComment);
+	global->AddRule(r);
+	
+	r = new ParserRule(multiLineComment, "*/", true, NULL);
+	multiLineComment->AddRule(r);
+	
+	ParserEnvironment* stringLiteral = new ParserEnvironment("string", 5);
+	parser->AddEnvironment(stringLiteral);
+	
+	r = new ParserRule(global, "\"", false, stringLiteral);
+	global->AddRule(r);
+	
+	r = new ParserRule(stringLiteral, "", true, NULL);	// Handle unterminated literals
+	r->SetMustEndLine(true);
+	stringLiteral->AddRule(r);
+	
+	r = new ParserRule(stringLiteral, "\"", true, NULL);
+	stringLiteral->AddRule(r);
+	
+	ParserEnvironment* characterLiteral = new ParserEnvironment("character", 5);
+	parser->AddEnvironment(characterLiteral);
+	
+	r = new ParserRule(global, "\'", false, characterLiteral);
+	global->AddRule(r);
+	
+	r = new ParserRule(characterLiteral, "", true, NULL);	// Handle unterminated literals
+	r->SetMustEndLine(true);
+	characterLiteral->AddRule(r);
+	
+	r = new ParserRule(characterLiteral, "\'", true, NULL);
+	characterLiteral->AddRule(r);
 	
 	Clear();
 }
@@ -405,6 +450,7 @@ int EditorDocument::CursorPosition(int line, size_t offset)
 void EditorDocument::UpdateLineMetadata(DocumentLine& l)
 {
 	l.displayLength = DisplayLength(l.str.c_str());
+	l.validParse = false;
 }
 
 
@@ -960,5 +1006,7 @@ void EditorDocument::FinalizeEditAction(void)
 	undo.push_back(currentUndo);
 	currentUndo = NULL;
 }
+
+
 
 

@@ -208,6 +208,19 @@ ParserEnvironment* ParserState::Environment()
 
 
 /**
+ * Compare this parser state to another state
+ *
+ * @param other the other state
+ * @return true if they are the equal
+ */
+bool ParserState::operator== (const ParserState& other) const
+{
+	if (other.environmentStack != environmentStack) return false;
+	return true;
+}
+
+
+/**
  * Create a new instance of the parser
  */
 Parser::Parser()
@@ -242,15 +255,23 @@ void Parser::AddEnvironment(ParserEnvironment* environment)
  * Parse the next line
  *
  * @param line the document line
+ * @param previous the previous line, or NULL if not applicable
  */
-void Parser::Parse(DocumentLine& line)
+void Parser::Parse(DocumentLine& line, const DocumentLine* previous)
 {
 	// TODO Do not always restart from the global environment
 	
 	ParserState initial;
-	initial.environmentStack.push_back(globalEnvironment);
+	
+	if (previous == NULL || previous->parserStates.empty()) {
+		initial.environmentStack.push_back(globalEnvironment);
+	}
+	else {
+		initial = previous->parserStates[previous->parserStates.size()-1].second;
+	}
 	
 	line.parserStates.clear();
+	line.initialParserState = initial;
 	
 	ParserState current = initial;
 	
@@ -272,11 +293,9 @@ void Parser::Parse(DocumentLine& line)
 			
 			if (close)  {
 			
-				size_t l = strlen(r->Token());
-				i += l;
-				if (i > 0 && l > 0) i--;
+				i += strlen(r->Token());
 				
-				l = current.environmentStack.size();
+				size_t l = current.environmentStack.size();
 				if (l > 0) {
 					current.environmentStack.pop_back();
 				}
@@ -292,7 +311,8 @@ void Parser::Parse(DocumentLine& line)
 			line.parserStates.push_back(std::pair<unsigned, ParserState>(i, current));
 		}
 	}
+	
+	line.validParse = true;
 }
-
 
 
