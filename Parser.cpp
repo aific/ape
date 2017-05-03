@@ -43,20 +43,19 @@
 /**
  * Create a new parser rule
  *
- * @param _environment the environment
  * @param _token the token
  * @param _closeCurrent true to close the current environment
  * @param _openEnvironment the new environment to open (or NULL)
  */
-ParserRule::ParserRule(ParserEnvironment* _environment, const char* _token,
-                       bool _closeCurrent, ParserEnvironment* _openEnvironment)
+ParserRule::ParserRule(const char* _token, bool _closeCurrent,
+                       ParserEnvironment* _openEnvironment)
 {
-	environment = _environment;
 	token = _token;
 	closeCurrent = _closeCurrent;
 	openEnvironment = _openEnvironment;
 	mustStartLine = false;
 	mustEndLine = false;
+	referenceCount = 0;
 }
 
 
@@ -120,7 +119,11 @@ ParserEnvironment::~ParserEnvironment()
 {
 	for (int i = 0; i < 128; i++) {
 		if (ruleTable[i] != NULL) {
-			for (ParserRule*& rule : *ruleTable[i]) delete rule;
+			for (ParserRule*& rule : *ruleTable[i]) {
+				if (--(rule->referenceCount) <= 0) {
+					delete rule;
+				}
+			}
 			delete ruleTable[i];
 		}
 	}
@@ -130,11 +133,11 @@ ParserEnvironment::~ParserEnvironment()
 /**
  * Add a rule
  *
- * @param rule the rule (will take ownership of the class)
+ * @param rule the rule (will reference-count the object and destroy it at the end if appropriate)
  */
 void ParserEnvironment::AddRule(ParserRule* rule)
 {
-	assert(rule->Environment() == this);
+	rule->referenceCount++;
 	
 	char firstLetter = rule->Token()[0];
 	if (firstLetter >= 127) firstLetter = 127;
@@ -276,12 +279,22 @@ void Parser::Parse(DocumentLine& line, const DocumentLine* previous)
 	ParserState current = initial;
 	
 	for (unsigned i = 0; i <= line.str.length(); i++) {
-		ParserRule* r = current.Environment()->FindMatchingRule(line.str.c_str(), i);
+	
+		// Some rules might need to be applied multiple times
 		
+		bool done = false;
+		bool applied = false;
+		
+		while (!done) {
+			done = true;
+			
+			ParserRule* r = current.Environment()->FindMatchingRule(line.str.c_str(), i);
+			if (r == NULL) break;
 
-		// Apply the rule, if found
-		
-		if (r != NULL) {
+
+			// Apply the rule, if found
+			
+			applied = true;
 			
 			ParserEnvironment* open = r->OpensEnvironment();
 			bool close = r->ClosesCurrentEnvironment();
@@ -305,14 +318,29 @@ void Parser::Parse(DocumentLine& line, const DocumentLine* previous)
 				
 				line.parserStates.push_back(std::pair<unsigned, ParserState>(i, current));
 			}
+			
+			
+			// Look for more rules for zero-length tokens
+			
+			if (strlen(r->Token()) == 0 && (open != NULL || close)) {
+				done = false;
+			}
+			
+			
+			// Look for more rules if we are at the end of the line
+			
+			if (i == line.str.length() && (open != NULL || close)) {
+				done = false;
+			}
 		}
 		
-		if (i == 0 && r == NULL) {
+		if (i == 0 && !applied) {
 			line.parserStates.push_back(std::pair<unsigned, ParserState>(i, current));
 		}
 	}
 	
 	line.validParse = true;
 }
+
 
 

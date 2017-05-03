@@ -63,7 +63,8 @@ class Parser;
  */
 class ParserRule
 {
-	ParserEnvironment* environment;
+	friend class ParserEnvironment;
+	
 	std::string token;
 	
 	bool closeCurrent;
@@ -71,6 +72,8 @@ class ParserRule
 
 	bool mustStartLine;
 	bool mustEndLine;
+	
+	int referenceCount;
 
 
 public:
@@ -78,12 +81,11 @@ public:
 	/**
 	 * Create a new parser rule
 	 *
-	 * @param environment the environment
 	 * @param token the token
 	 * @param closeCurrent true to close the current environment
 	 * @param openEnvironment the new environment to open (or NULL)
 	 */
-	ParserRule(ParserEnvironment* environment, const char* token,
+	ParserRule(const char* token,
 	           bool closeCurrent, ParserEnvironment* openEnvironment);
 	
 	/**
@@ -99,13 +101,6 @@ public:
 	 * @return true if it matches
 	 */
 	virtual bool Matches(const char* line, unsigned pos);
-	
-	/**
-	 * Get the environment to which the rule applies
-	 *
-	 * @return the environment
-	 */
-	inline ParserEnvironment* Environment() const { return environment; }
 	 
 	/**
 	 * Get the token
@@ -218,7 +213,7 @@ public:
 	/**
 	 * Add a rule
 	 *
-	 * @param rule the rule (will take ownership of the class)
+	 * @param rule the rule (will reference-count the object and destroy it at the end if appropriate)
 	 */
 	void AddRule(ParserRule* rule);
 	
@@ -338,4 +333,5 @@ public:
 
 
 #endif
+
 

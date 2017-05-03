@@ -54,60 +54,62 @@ EditorDocument::EditorDocument(void)
 	ParserEnvironment* global = new ParserEnvironment("global", 7);
 	parser->AddEnvironment(global);
 	
-	ParserEnvironment* preprocessor = new ParserEnvironment("preprocessor", 3);
+	ParserEnvironment* preprocessor = new ParserEnvironment("preprocessor", 1);
 	parser->AddEnvironment(preprocessor);
 	
-	r = new ParserRule(global, "#", false, preprocessor);
+	r = new ParserRule("#", false, preprocessor);
 	r->SetMustStartLine(true);
 	global->AddRule(r);
 	
-	r = new ParserRule(preprocessor, "", true, NULL);
+	r = new ParserRule("", true, NULL);
 	r->SetMustEndLine(true);
 	preprocessor->AddRule(r);
 	
 	ParserEnvironment* singleLineComment = new ParserEnvironment("comment-sl", 6);
 	parser->AddEnvironment(singleLineComment);
 	
-	r = new ParserRule(global, "//", false, singleLineComment);
+	r = new ParserRule("//", false, singleLineComment);
 	global->AddRule(r);
+	preprocessor->AddRule(r);
 	
-	r = new ParserRule(singleLineComment, "", true, NULL);
+	r = new ParserRule("", true, NULL);
 	r->SetMustEndLine(true);
 	singleLineComment->AddRule(r);
 	
 	ParserEnvironment* multiLineComment = new ParserEnvironment("comment-ml", 6);
 	parser->AddEnvironment(multiLineComment);
 	
-	r = new ParserRule(global, "/*", false, multiLineComment);
+	r = new ParserRule("/*", false, multiLineComment);
 	global->AddRule(r);
+	preprocessor->AddRule(r);
 	
-	r = new ParserRule(multiLineComment, "*/", true, NULL);
+	r = new ParserRule("*/", true, NULL);
 	multiLineComment->AddRule(r);
 	
-	ParserEnvironment* stringLiteral = new ParserEnvironment("string", 5);
+	ParserEnvironment* stringLiteral = new ParserEnvironment("string", 3);
 	parser->AddEnvironment(stringLiteral);
 	
-	r = new ParserRule(global, "\"", false, stringLiteral);
+	r = new ParserRule("\"", false, stringLiteral);
 	global->AddRule(r);
 	
-	r = new ParserRule(stringLiteral, "", true, NULL);	// Handle unterminated literals
+	r = new ParserRule("", true, NULL);	// Handle unterminated literals
 	r->SetMustEndLine(true);
 	stringLiteral->AddRule(r);
 	
-	r = new ParserRule(stringLiteral, "\"", true, NULL);
+	r = new ParserRule("\"", true, NULL);
 	stringLiteral->AddRule(r);
 	
-	ParserEnvironment* characterLiteral = new ParserEnvironment("character", 5);
+	ParserEnvironment* characterLiteral = new ParserEnvironment("character", 3);
 	parser->AddEnvironment(characterLiteral);
 	
-	r = new ParserRule(global, "\'", false, characterLiteral);
+	r = new ParserRule("\'", false, characterLiteral);
 	global->AddRule(r);
 	
-	r = new ParserRule(characterLiteral, "", true, NULL);	// Handle unterminated literals
+	r = new ParserRule("", true, NULL);	// Handle unterminated literals
 	r->SetMustEndLine(true);
 	characterLiteral->AddRule(r);
 	
-	r = new ParserRule(characterLiteral, "\'", true, NULL);
+	r = new ParserRule("\'", true, NULL);
 	characterLiteral->AddRule(r);
 	
 	Clear();
@@ -1006,6 +1008,7 @@ void EditorDocument::FinalizeEditAction(void)
 	undo.push_back(currentUndo);
 	currentUndo = NULL;
 }
+
 
 
 
