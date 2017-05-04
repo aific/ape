@@ -618,6 +618,8 @@ void Manager::ProcessMessages(void)
 
 		if (key == KEY_SLEFT ) key = KEY_SHIFT_LEFT;
 		if (key == KEY_SRIGHT) key = KEY_SHIFT_RIGHT;
+		if (key == KEY_SHOME ) key = KEY_SHIFT_HOME;
+		if (key == KEY_SEND  ) key = KEY_SHIFT_END;
 
 
 		// Translate other escape sequences
@@ -635,6 +637,8 @@ void Manager::ProcessMessages(void)
 						case 'B': key = KEY_SHIFT_DOWN; break;
 						case 'C': key = KEY_SHIFT_RIGHT; break;
 						case 'D': key = KEY_SHIFT_LEFT; break;
+						case 'H': key = KEY_SHIFT_HOME; break;
+						case 'F': key = KEY_SHIFT_END; break;
 					}
 				}
 				else {
@@ -780,6 +784,7 @@ void Manager::SetStatus(const char* s)
 	status = s;
 	PaintStatus();
 }
+
 
 
 

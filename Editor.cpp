@@ -958,13 +958,31 @@ void Editor::MoveCursorVeryLeft(void)
 
 /**
  * Move the cursor to the beginning of the line
+ * 
+ * @param shift whether the Shift button was held
  */
-void Editor::MoveCursorToTheBeginningOfTheLine(void)
+void Editor::MoveCursorToTheBeginningOfTheLine(bool shift)
 {
 	bool needsPaint = EnsureValidScroll();
 	
 	
-	// TODO Determine the position of the first non-blank character of the line
+	// Selection logic
+	
+	if (shift && !selection) {
+		selRow = row;
+		selCol = actualCol;
+		selection = true;
+	}
+	
+	if (!shift && selection) {
+		selection = false;
+		needsPaint = true;
+	}
+	
+	if (selection) needsPaint = true;
+	
+	
+	// Determine the position of the first non-blank character of the line
 	
 	int firstNonBlank = 0;
 	const char* line = doc->Line(row);
@@ -1005,10 +1023,31 @@ void Editor::MoveCursorToTheBeginningOfTheLine(void)
 
 /**
  * Move the cursor to the very right
+ * 
+ * @param shift whether the Shift button was held
  */
-void Editor::MoveCursorVeryRight(void)
+void Editor::MoveCursorVeryRight(bool shift)
 {
 	bool needsPaint = EnsureValidScroll();
+	
+	
+	// Selection logic
+	
+	if (shift && !selection) {
+		selRow = row;
+		selCol = actualCol;
+		selection = true;
+	}
+	
+	if (!shift && selection) {
+		selection = false;
+		needsPaint = true;
+	}
+	
+	if (selection) needsPaint = true;
+
+
+	// Move the cursor
 	
 	col = doc->DisplayLength(row);
 	
@@ -1684,6 +1723,18 @@ void Editor::OnKeyPressed(int key)
 		return;
 	}
 	
+	if (key == KEY_SHIFT_HOME) {
+		doc->FinalizeEditAction();
+		MoveCursorToTheBeginningOfTheLine(true);
+		return;
+	}
+	
+	if (key == KEY_SHIFT_END) {
+		doc->FinalizeEditAction();
+		MoveCursorVeryRight(true);
+		return;
+	}
+	
 	
 	// Select all
 	
@@ -1849,6 +1900,7 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
 
 
 

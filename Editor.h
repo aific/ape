@@ -132,13 +132,17 @@ class Editor : public Component
 	
 	/**
 	 * Move the cursor to the beginning of the line
+	 * 
+	 * @param shift whether the Shift button was held
 	 */
-	void MoveCursorToTheBeginningOfTheLine(void);
+	void MoveCursorToTheBeginningOfTheLine(bool shift = false);
 	
 	/**
 	 * Move the cursor to the very right
+	 * 
+	 * @param shift whether the Shift button was held
 	 */
-	void MoveCursorVeryRight(void);
+	void MoveCursorVeryRight(bool shift = false);
 	
 	/**
 	 * Move the cursor one page up
@@ -381,6 +385,7 @@ public:
 };
 
 #endif
+
 
 
 
