@@ -289,10 +289,11 @@ void Editor::PaintLine(int line)
 	if (parser != NULL && objLine != NULL) {
 	
 		// Make sure all of the previous lines are also parsed
+		// TODO Make more efficient
 		
 		for (int l = 0; l <= line; l++) {
 			if (!doc->LineObject(l)->validParse
-				|| (l > 0 && doc->LineObject(l)->ParserStateFollows(doc->LineObject(l-1)))) {
+				|| (l > 0 && !doc->LineObject(l)->ParserStateFollows(doc->LineObject(l-1)))) {
 				for (int i = l; i <= line; i++) {
 					parser->Parse(*doc->LineObject(i),
 						i == 0 ? NULL : doc->LineObject(i-1));
@@ -1900,7 +1901,4 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
-
-
-
 
