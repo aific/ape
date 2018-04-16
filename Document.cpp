@@ -45,72 +45,7 @@ EditorDocument::EditorDocument(void)
 {
 	currentUndo = NULL;
 	tabSize = 4;
-	
-	// TODO Move the parser creation somewhere else
-	
-	parser = new Parser();
-	ParserRule* r;
-	
-	ParserEnvironment* global = new ParserEnvironment("global", 7);
-	parser->AddEnvironment(global);
-	
-	ParserEnvironment* preprocessor = new ParserEnvironment("preprocessor", 1);
-	parser->AddEnvironment(preprocessor);
-	
-	r = new ParserRule("#", false, preprocessor);
-	r->SetMustStartLine(true);
-	global->AddRule(r);
-	
-	r = new ParserRule("", true, NULL);
-	r->SetMustEndLine(true);
-	preprocessor->AddRule(r);
-	
-	ParserEnvironment* singleLineComment = new ParserEnvironment("comment-sl", 6);
-	parser->AddEnvironment(singleLineComment);
-	
-	r = new ParserRule("//", false, singleLineComment);
-	global->AddRule(r);
-	preprocessor->AddRule(r);
-	
-	r = new ParserRule("", true, NULL);
-	r->SetMustEndLine(true);
-	singleLineComment->AddRule(r);
-	
-	ParserEnvironment* multiLineComment = new ParserEnvironment("comment-ml", 6);
-	parser->AddEnvironment(multiLineComment);
-	
-	r = new ParserRule("/*", false, multiLineComment);
-	global->AddRule(r);
-	preprocessor->AddRule(r);
-	
-	r = new ParserRule("*/", true, NULL);
-	multiLineComment->AddRule(r);
-	
-	ParserEnvironment* stringLiteral = new ParserEnvironment("string", 3);
-	parser->AddEnvironment(stringLiteral);
-	
-	r = new ParserRule("\"", false, stringLiteral);
-	global->AddRule(r);
-	
-	r = new ParserRule("", true, NULL);	// Handle unterminated literals
-	r->SetMustEndLine(true);
-	stringLiteral->AddRule(r);
-	
-	r = new ParserRule("\"", true, NULL);
-	stringLiteral->AddRule(r);
-	
-	ParserEnvironment* characterLiteral = new ParserEnvironment("character", 3);
-	parser->AddEnvironment(characterLiteral);
-	
-	r = new ParserRule("\'", false, characterLiteral);
-	global->AddRule(r);
-	
-	r = new ParserRule("", true, NULL);	// Handle unterminated literals
-	r->SetMustEndLine(true);
-	characterLiteral->AddRule(r);
-	
-	r = new ParserRule("\'", true, NULL);
-	characterLiteral->AddRule(r);
+	parser = NULL;
 	
 	Clear();
 }
@@ -126,6 +61,23 @@ EditorDocument::~EditorDocument(void)
 	while (!redo.empty()) { delete redo.back(); redo.pop_back(); }
 	
 	if (parser != NULL) delete parser;
+}
+
+
+/**
+ * Set the parser
+ *
+ * @param parser the parser, or NULL to clear (this will transfer ownership)
+ */
+void EditorDocument::SetParser(Parser* parser)
+{
+	if (EditorDocument::parser != NULL) delete EditorDocument::parser;
+	EditorDocument::parser = parser;
+	
+	int numLines = NumLines();
+	for (int i = 0; i < numLines; i++) {
+		lines[i].ClearParsing();
+	}
 }
 
 
@@ -1008,6 +960,7 @@ void EditorDocument::FinalizeEditAction(void)
 	undo.push_back(currentUndo);
 	currentUndo = NULL;
 }
+
 
 
 

@@ -62,7 +62,81 @@ Editor::Editor(Container* parent, bool _multiline, int _row, int _col, int rows,
 	// Create an empty document
 	
 	doc = new EditorDocument();
+
 	
+	// TODO Move the parser creation somewhere else
+	
+	Parser* parser = new Parser();
+	ParserRule* r;
+	
+	ParserEnvironment* global = new ParserEnvironment("global", 7);
+	parser->AddEnvironment(global);
+	
+	ParserEnvironment* preprocessor = new ParserEnvironment("preprocessor", 1);
+	parser->AddEnvironment(preprocessor);
+	
+	r = new ParserRule("#", false, preprocessor);
+	r->SetMustStartLine(true);
+	global->AddRule(r);
+	
+	r = new ParserRule("", true, NULL);
+	r->SetMustEndLine(true);
+	preprocessor->AddRule(r);
+	
+	ParserEnvironment* singleLineComment = new ParserEnvironment("comment-sl", 6);
+	parser->AddEnvironment(singleLineComment);
+	
+	r = new ParserRule("//", false, singleLineComment);
+	global->AddRule(r);
+	preprocessor->AddRule(r);
+	
+	r = new ParserRule("", true, NULL);
+	r->SetMustEndLine(true);
+	singleLineComment->AddRule(r);
+	
+	ParserEnvironment* multiLineComment = new ParserEnvironment("comment-ml", 6);
+	parser->AddEnvironment(multiLineComment);
+	
+	r = new ParserRule("/*", false, multiLineComment);
+	global->AddRule(r);
+	preprocessor->AddRule(r);
+	
+	r = new ParserRule("*/", true, NULL);
+	multiLineComment->AddRule(r);
+	
+	ParserEnvironment* stringLiteral = new ParserEnvironment("string", 3);
+	parser->AddEnvironment(stringLiteral);
+	
+	r = new ParserRule("\"", false, stringLiteral);
+	global->AddRule(r);
+	
+	r = new ParserRule("", true, NULL);	// Handle unterminated literals
+	r->SetMustEndLine(true);
+	stringLiteral->AddRule(r);
+	
+	r = new ParserRule("\"", true, NULL);
+	stringLiteral->AddRule(r);
+	
+	ParserEnvironment* characterLiteral = new ParserEnvironment("character", 3);
+	parser->AddEnvironment(characterLiteral);
+	
+	r = new ParserRule("\'", false, characterLiteral);
+	global->AddRule(r);
+	
+	r = new ParserRule("", true, NULL);	// Handle unterminated literals
+	r->SetMustEndLine(true);
+	characterLiteral->AddRule(r);
+	
+	r = new ParserRule("\'", true, NULL);
+	characterLiteral->AddRule(r);
+	
+	if (_multiline) {
+		doc->SetParser(parser);
+	}
+	else {
+		delete parser;
+	}
+
 	
 	// Configure the editor
 
@@ -1901,4 +1975,5 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
 

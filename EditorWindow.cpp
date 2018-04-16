@@ -224,6 +224,7 @@ void EditorWindow::OnKeyPressed(int key)
 			splitPane->SetOneComponentMode(SPLITPANE_COMPONENT_NONE);
 			editor->SetHighlightPattern(patternEditor->Document()->Line(0));
 			patternEditor->Focus();
+			patternEditor->SelectAll();
 		}
 	}
 
@@ -337,5 +338,6 @@ void EditorWindow::Refresh(void)
 	
 	Component::Refresh();
 }
+
 
 

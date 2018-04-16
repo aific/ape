@@ -491,9 +491,17 @@ public:
 	 * @return the parser, or NULL if none
 	 */
 	inline Parser* DocumentParser(void) { return parser; }
+	
+	/**
+	 * Set the parser
+	 *
+	 * @param parser the parser, or NULL to clear (this will transfer ownership)
+	 */
+	void SetParser(Parser* parser);
 };
 
 #endif
+
 
 
 
