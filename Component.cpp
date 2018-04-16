@@ -173,6 +173,20 @@ bool Component::Visible(void) {
 
 
 /**
+ * Determine whether the given coordinate is in the component
+ *
+ * @param row the row
+ * @param column the column
+ * @return true if it contains
+ */
+bool Component::Contains(int row, int column)
+{
+	return row >= Component::row && row < Component::row + rows
+	    && column >= Component::col && column < Component::col + cols;
+}
+
+
+/**
  * Paint the component
  */
 void Component::Paint(void)
@@ -395,6 +409,18 @@ void Component::OnKeyPressed(int key)
 
 
 /**
+ * An event handler for a mouse event
+ *
+ * @param row the row
+ * @param column the column
+ * @param buttonState the button state bits
+ */
+void Component::OnMouseEvent(int row, int column, mmask_t buttonState)
+{
+}
+
+
+/**
  * An event handler for moving the component
  */
 void Component::OnMove(void)
@@ -570,4 +596,5 @@ void Component::RegisterEventHandler(EventHandler* handler)
 	assert(handler != NULL);
 	eventHandlers.push_back(handler);
 }
+
 

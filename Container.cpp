@@ -372,6 +372,18 @@ void Container::OnKeyPressed(int key)
 
 
 /**
+ * An event handler for a mouse event
+ *
+ * @param row the row
+ * @param column the column
+ * @param buttonState the button state bits
+ */
+void Container::OnMouseEvent(int row, int column, mmask_t buttonState)
+{
+}
+
+
+/**
  * Get the desired cursor row
  *
  * @return the desired cursor row
@@ -518,4 +530,5 @@ void Container::FocusNext(void)
 		FocusFirst();
 	}
 }
+
 

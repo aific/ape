@@ -111,6 +111,12 @@ void Manager::Initialize(void)
 	raw();
 	keypad(stdscr, TRUE);
 	nodelay(stdscr, TRUE);
+	
+	
+	// Initialize mouse
+	
+	mousemask(ALL_MOUSE_EVENTS, NULL);
+	mouseinterval(10 /* ms */);
 
 
 	// Get the screen size
@@ -296,6 +302,41 @@ void Manager::Close(Window* w)
 	}
 
 	Refresh();
+}
+
+
+/**
+ * Return the window at the given coordinate
+ *
+ * @param row the row
+ * @param column the column
+ * @return the window, or NULL if none
+ */
+Window* Manager::WindowAt(int row, int column)
+{
+	for (int i = ((int) menuWindows.size()) - 1; i >= 0; i--) {
+		if (menuWindows[i]->Visible()) {
+			if (menuWindows[i]->Contains(row, column)) {
+				return menuWindows[i];
+			}
+		}
+	}
+
+	if (windowSwitcher != NULL) {
+		if (windowSwitcher->Contains(row, column)) {
+			return windowSwitcher;
+		}
+	}
+
+	for (int i = ((int) windows.size()) - 1; i >= 0; i--) {
+		if (windows[i]->Visible()) {
+			if (windows[i]->Contains(row, column)) {
+				return windows[i];
+			}
+		}
+	}
+	
+	return NULL;
 }
 
 
@@ -675,6 +716,35 @@ void Manager::ProcessMessages(void)
 			TerminalResized();
 			continue;
 		}
+		
+		
+		// Handle mouse events
+		
+		if (key == KEY_MOUSE) {
+			MEVENT event;
+			if (getmouse(&event) == OK) {
+				
+				Window* window = WindowAt(event.y, event.x);
+				if (window == NULL) continue;
+				
+				
+				// Raise the window
+				
+				if (!window->Active()) {
+					if (!window->Menu()) CloseMenus();
+					if (window != windowSwitcher && windowSwitcher != NULL) {
+						windowSwitcher->Close();
+						windowSwitcher = NULL;
+					}
+					window->Raise();
+				}
+				
+				
+				// Pass event to the window (click-through)
+				
+				window->OnMouseEvent(event.y, event.x, event.bstate);
+			}
+		}
 
 
 		// Keyboard events
@@ -784,7 +854,4 @@ void Manager::SetStatus(const char* s)
 	status = s;
 	PaintStatus();
 }
-
-
-
 

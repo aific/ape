@@ -159,6 +159,15 @@ public:
 	inline const std::vector<Window*>& Windows(void) { return windows; }
 
 	/**
+	 * Return the window at the given coordinate
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @return the window, or NULL if none
+	 */
+	Window* WindowAt(int row, int column);
+
+	/**
 	 * Open a menu window
 	 *
 	 * @param w the window (will NOT be destroyed by the window manager)
@@ -259,3 +268,4 @@ public:
 extern Manager wm;
 
 #endif
+

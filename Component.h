@@ -143,6 +143,15 @@ protected:
 	 * @param key the key code
 	 */
 	virtual void OnKeyPressed(int key);
+	
+	/**
+	 * An event handler for a mouse event
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param buttonState the button state bits
+	 */
+	virtual void OnMouseEvent(int row, int column, mmask_t buttonState);
 
 	/**
 	 * An event handler for moving the component
@@ -320,6 +329,15 @@ public:
 	 * @return the column
 	 */
 	inline int ScreenColumn(void) { return screenCol; }
+	
+	/**
+	 * Determine whether the given coordinate is in the component
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @return true if it contains
+	 */
+	bool Contains(int row, int column);
 
     /**
      * Return the first row within the component where the contents can be displayed
@@ -463,3 +481,4 @@ public:
 };
 
 #endif
+
