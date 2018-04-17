@@ -1858,6 +1858,20 @@ void Editor::OnKeyPressed(int key)
 
 
 /**
+ * An event handler for a mouse event
+ *
+ * @param row the row
+ * @param column the column
+ * @param buttonState the button state bits
+ */
+void Editor::OnMouseEvent(int row, int column, mmask_t buttonState)
+{
+	if (doc == NULL) return;
+	MoveDocumentCursor(doc->PageStart() + row, colStart + column);
+}
+
+
+/**
  * An event handler for resizing the window
  *
  * @param oldRows the old number of rows
@@ -1975,5 +1989,6 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
 
 

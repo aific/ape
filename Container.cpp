@@ -380,6 +380,18 @@ void Container::OnKeyPressed(int key)
  */
 void Container::OnMouseEvent(int row, int column, mmask_t buttonState)
 {
+	for (int i = ((int) components.size()) - 1; i >= 0; i--) {
+		if (!components[i]->Visible()) continue;
+		if (!components[i]->Contains(row - ClientRow(), column - ClientColumn())) continue;
+		
+		if (components[i]->CanReceiveFocus()) {
+			components[i]->Focus();
+		}
+		
+		components[i]->OnMouseEvent(row - components[i]->Row() - ClientRow(),
+			column - components[i]->Column() - ClientColumn(), buttonState);
+		return;
+	}
 }
 
 
@@ -487,7 +499,7 @@ Component* Container::ActiveTopLevelComponent(void)
 void Container::FocusFirst(void)
 {
 	for (size_t i = 0; i < components.size(); i++) {
-		if (components[i]->CanReceiveFocus()) {
+		if (components[i]->CanReceiveFocus() && components[i]->Visible()) {
 			if (components[i]->InstanceOfContainer())
 				((Container*) components[i])->FocusFirst();
 			else
@@ -511,7 +523,7 @@ void Container::FocusNext(void)
 	// Attempt to find the next component that can receive focus
 	
 	for (size_t i = activeComponent + 1; i < components.size(); i++) {
-		if (components[i]->CanReceiveFocus()) {
+		if (components[i]->CanReceiveFocus() && components[i]->Visible()) {
 			if (components[i]->InstanceOfContainer())
 				((Container*) components[i])->FocusFirst();
 			else
@@ -530,5 +542,6 @@ void Container::FocusNext(void)
 		FocusFirst();
 	}
 }
+
 
 

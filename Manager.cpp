@@ -742,7 +742,8 @@ void Manager::ProcessMessages(void)
 				
 				// Pass event to the window (click-through)
 				
-				window->OnMouseEvent(event.y, event.x, event.bstate);
+				window->OnMouseEvent(event.y - window->Row(),
+					event.x - window->Column(), event.bstate);
 			}
 		}
 
@@ -854,4 +855,5 @@ void Manager::SetStatus(const char* s)
 	status = s;
 	PaintStatus();
 }
+
 

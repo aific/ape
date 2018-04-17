@@ -244,6 +244,15 @@ protected:
 	 * @param key the key code
 	 */
 	virtual void OnKeyPressed(int key);
+	
+	/**
+	 * An event handler for a mouse event
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param buttonState the button state bits
+	 */
+	virtual void OnMouseEvent(int row, int column, mmask_t buttonState);
 
 	/**
 	 * An event handler for resizing the component
@@ -385,6 +394,7 @@ public:
 };
 
 #endif
+
 
 
 
