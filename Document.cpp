@@ -39,6 +39,41 @@
 
 
 /**
+ * Perform actions after updating the line
+ */
+void DocumentLine::LineUpdated()
+{
+	// Invalidate the parsing
+
+	validParse = false;
+
+
+	// Update the display length
+	
+	// XXX
+	int tabSize = 4;
+	
+	int pos = 0;
+	const char* p = str.c_str();
+	
+	while (*p != '\0' && *p != '\n' && *p != '\r') {
+		char c = *p;
+		
+		if (c == '\t') {
+			pos = (pos / tabSize) * tabSize + tabSize;
+			p++;
+		}
+		else {
+			pos++;
+			p++;
+		}
+	}
+	
+	displayLength = pos;
+}
+
+
+/**
  * Create an instance of class EditorDocument
  */
 EditorDocument::EditorDocument(void)
@@ -91,8 +126,7 @@ void EditorDocument::Clear(void)
 
 	DocumentLine l;
 	lines.push_back(l);
-	UpdateLineMetadata(l);
-	displayLengths.Increment(l.displayLength);
+	displayLengths.Increment(l.DisplayLength());
 
 	fileName = "";
 	
@@ -145,10 +179,9 @@ ReturnExt EditorDocument::LoadFromFile(const char* file)
 			buffer_pos = 0;
 
 			DocumentLine l;
-			l.str = std::string(buffer);
-			UpdateLineMetadata(l);
+			l.SetText(buffer);
 			lines.push_back(l);
-			displayLengths.Increment(l.displayLength);
+			displayLengths.Increment(l.DisplayLength());
 
 			continue;
 		}
@@ -168,10 +201,9 @@ ReturnExt EditorDocument::LoadFromFile(const char* file)
 	buffer[buffer_pos++] = '\0';
 
 	DocumentLine l;
-	l.str = std::string(buffer);
-	UpdateLineMetadata(l);
+	l.SetText(buffer);
 	lines.push_back(l);
-	displayLengths.Increment(l.displayLength);
+	displayLengths.Increment(l.DisplayLength());
 
 
 	// Finish
@@ -210,7 +242,7 @@ ReturnExt EditorDocument::SaveToFile(const char* file, bool switchFile)
 
 	int numLines = NumLines();
 	for (int i = 0; i < numLines; i++) {
-		const char* l = lines[i].str.c_str();
+		const char* l = lines[i].Text().c_str();
 		if (fputs(l, f) == EOF) {
 			fclose(f);
 			unlink(tmp);
@@ -297,34 +329,6 @@ void EditorDocument::SetPageStart(int start)
 
 
 /**
- * Get the display length of the line
- * 
- * @param line the line string
- * @return the display length
- */
-int EditorDocument::DisplayLength(const char* line)
-{
-	int pos = 0;
-	const char* p = line;
-	
-	while (*p != '\0' && *p != '\n' && *p != '\r') {
-		char c = *p;
-		
-		if (c == '\t') {
-			pos = (pos / tabSize) * tabSize + tabSize;
-			p++;
-		}
-		else {
-			pos++;
-			p++;
-		}
-	}
-	
-	return pos;
-}
-
-
-/**
  * Return the maximum display length
  * 
  * @return the maximum display length
@@ -397,18 +401,6 @@ int EditorDocument::CursorPosition(int line, size_t offset)
 
 
 /**
- * Update the line metadata
- * 
- * @param l the line object
- */
-void EditorDocument::UpdateLineMetadata(DocumentLine& l)
-{
-	l.displayLength = DisplayLength(l.str.c_str());
-	l.validParse = false;
-}
-
-
-/**
  * Set the cursor location (used for undo logging)
  * 
  * @param row the row
@@ -444,11 +436,10 @@ void EditorDocument::Append(const char* line)
 	PrepareEdit();
 	DocumentLine l;
 	
-	l.str = std::string(line);
+	l.SetText(line);
 	
-	UpdateLineMetadata(l);
 	lines.push_back(l);
-	displayLengths.Increment(l.displayLength);
+	displayLengths.Increment(l.DisplayLength());
 	
 	modified = true;
 }
@@ -465,11 +456,10 @@ void EditorDocument::Insert(int pos, const char* line)
 	PrepareEdit();
 	DocumentLine l;
 	
-	l.str = std::string(line);
+	l.SetText(line);
 	
-	UpdateLineMetadata(l);
 	lines.insert(lines.begin() + pos, 1, l);
-	displayLengths.Increment(l.displayLength);
+	displayLengths.Increment(l.DisplayLength());
 	
 	modified = true;
 	
@@ -487,13 +477,12 @@ void EditorDocument::Replace(int pos, const char* line)
 {
 	PrepareEdit();
 	DocumentLine& l = lines[pos];
-	displayLengths.Decrement(l.displayLength);
+	displayLengths.Decrement(l.DisplayLength());
 	
-	std::string org = l.str;
-	l.str = std::string(line);
+	std::string org = l.Text();
+	l.SetText(line);
 	
-	UpdateLineMetadata(l);
-	displayLengths.Increment(l.displayLength);
+	displayLengths.Increment(l.DisplayLength());
 	
 	modified = true;
 	
@@ -512,14 +501,16 @@ void EditorDocument::InsertCharToLine(int line, char ch, int pos)
 {
 	PrepareEdit();
 	DocumentLine& l = lines[line];
-	displayLengths.Decrement(l.displayLength);
+	displayLengths.Decrement(l.DisplayLength());
 	
 	if (pos < 0) pos = 0;
-	if (pos > l.str.length()) pos = l.str.length();
+	if (pos > l.Text().length()) pos = l.Text().length();
 	
-	l.str.insert(pos, 1, ch);
-	UpdateLineMetadata(l);
-	displayLengths.Increment(l.displayLength);
+	std::string s = l.Text();
+	s.insert(pos, 1, ch);
+	l.SetText(s);
+	
+	displayLengths.Increment(l.DisplayLength());
 	
 	modified = true;
 	
@@ -537,17 +528,18 @@ void EditorDocument::DeleteCharFromLine(int line, int pos)
 {
 	PrepareEdit();
 	DocumentLine& l = lines[line];
-	if (l.str.length() == 0) return;
-	displayLengths.Decrement(l.displayLength);
+	if (l.Text().length() == 0) return;
+	displayLengths.Decrement(l.DisplayLength());
 
-	if (pos >= l.str.length()) pos = l.str.length() - 1;
+	if (pos >= l.Text().length()) pos = l.Text().length() - 1;
 	if (pos < 0) pos = 0;
 	
-	char ch = l.str[pos];
+	std::string s = l.Text();
+	char ch = s[pos];
 	
-	l.str.erase(pos, 1);
-	UpdateLineMetadata(l);
-	displayLengths.Increment(l.displayLength);
+	s.erase(pos, 1);
+	l.SetText(s);
+	displayLengths.Increment(l.DisplayLength());
 	
 	modified = true;
 	
@@ -565,21 +557,20 @@ void EditorDocument::JoinTwoLines(int line)
 	PrepareEdit();
 	DocumentLine& l = lines[line];
 	DocumentLine& l2 = lines[line + 1];
-	displayLengths.Decrement(l.displayLength);
-	displayLengths.Decrement(l2.displayLength);
+	displayLengths.Decrement(l.DisplayLength());
+	displayLengths.Decrement(l2.DisplayLength());
 	
-	std::string org1 = l.str;
-	std::string org2 = l2.str;
+	std::string org1 = l.Text();
+	std::string org2 = l2.Text();
 	
-	l.str += l2.str;
-	UpdateLineMetadata(l);
+	l.SetText(org1 + org2);
 	
 	lines.erase(lines.begin() + line + 1);
-	displayLengths.Increment(l.displayLength);
+	displayLengths.Increment(l.DisplayLength());
 	
 	modified = true;
 
-	currentUndo->Add(new EA_ReplaceLine(line, org1.c_str(), l.str.c_str()));
+	currentUndo->Add(new EA_ReplaceLine(line, org1.c_str(), l.Text().c_str()));
 	currentUndo->Add(new EA_DeleteLine(line + 1, org2.c_str()));
 }
 
@@ -594,17 +585,16 @@ void EditorDocument::JoinTwoLines(int line)
 void EditorDocument::InsertStringEx(int line, int pos, const char* str)
 {
 	DocumentLine& l = lines[line];
-	displayLengths.Decrement(l.displayLength);
+	displayLengths.Decrement(l.DisplayLength());
 	
 	if (pos < 0) pos = 0;
-	if (pos > l.str.length()) pos = l.str.length();
+	if (pos > l.Text().length()) pos = l.Text().length();
 	
 	const char* linebreak = std::strchr(str, '\n');
 	if (linebreak == NULL) {
 		
-		l.str = l.str.substr(0, pos) + std::string(str) + l.str.substr(pos);
-		UpdateLineMetadata(l);
-		displayLengths.Increment(l.displayLength);
+		l.SetText(l.Text().substr(0, pos) + std::string(str) + l.Text().substr(pos));
+		displayLengths.Increment(l.DisplayLength());
 	}
 	else {
 		
@@ -614,7 +604,7 @@ void EditorDocument::InsertStringEx(int line, int pos, const char* str)
 		const char* start = str;
 		const char* end = start;
 		
-		std::string rest = l.str.substr(pos);
+		std::string rest = l.Text().substr(pos);
 		
 		while (true) {
 			
@@ -625,24 +615,21 @@ void EditorDocument::InsertStringEx(int line, int pos, const char* str)
 				start = end + 1;
 				
 				if (li == 0) {
-					l.str = l.str.substr(0, pos) + std::string(buf);
-					UpdateLineMetadata(l);
-					displayLengths.Increment(l.displayLength);
+					l.SetText(l.Text().substr(0, pos) + std::string(buf));
+					displayLengths.Increment(l.DisplayLength());
 				}
 				else if (*end == '\0') {
 					DocumentLine nl;
-					nl.str = std::string(buf) + rest;
-					UpdateLineMetadata(nl);
+					nl.SetText(std::string(buf) + rest);
 					lines.insert(lines.begin() + line + li, 1, nl);
-					displayLengths.Increment(nl.displayLength);
+					displayLengths.Increment(nl.DisplayLength());
 					break;
 				}
 				else {
 					DocumentLine nl;
-					nl.str = std::string(buf);
-					UpdateLineMetadata(nl);
+					nl.SetText(std::string(buf));
 					lines.insert(lines.begin() + line + li, 1, nl);
-					displayLengths.Increment(nl.displayLength);
+					displayLengths.Increment(nl.DisplayLength());
 				}
 			}
 			else {
@@ -697,17 +684,18 @@ void EditorDocument::DeleteStringEx(int line, int pos, int toline, int topos)
 		if (topos == pos) return;
 		
 		DocumentLine& l = lines[line];
-		displayLengths.Decrement(l.displayLength);
+		displayLengths.Decrement(l.DisplayLength());
 		
-		if (pos >= l.str.length()) pos = l.str.length();
+		std::string s = l.Text();
+		if (pos >= s.length()) pos = s.length();
 		if (pos < 0) pos = 0;
-		if (topos >= l.str.length()) topos = l.str.length();
+		if (topos >= s.length()) topos = s.length();
 		if (topos < 0) topos = 0;
 		
-		l.str.erase(pos, topos - pos);
+		s.erase(pos, topos - pos);
+		l.SetText(s);
 		
-		UpdateLineMetadata(l);
-		displayLengths.Increment(l.displayLength);
+		displayLengths.Increment(l.DisplayLength());
 	}
 	
 	if (toline > line) {
@@ -715,31 +703,30 @@ void EditorDocument::DeleteStringEx(int line, int pos, int toline, int topos)
 		// Get the last line
 		
 		DocumentLine& ll = lines[toline];
-		displayLengths.Decrement(ll.displayLength);
+		displayLengths.Decrement(ll.DisplayLength());
 		
-		if (topos >= ll.str.length()) topos = ll.str.length();
+		if (topos >= ll.Text().length()) topos = ll.Text().length();
 		if (topos < 0) topos = 0;
 		
 		
 		// Update the first line
 		
 		DocumentLine& l = lines[line];
-		displayLengths.Decrement(l.displayLength);
+		displayLengths.Decrement(l.DisplayLength());
 		
-		if (pos >= l.str.length()) pos = l.str.length();
+		if (pos >= l.Text().length()) pos = l.Text().length();
 		if (pos < 0) pos = 0;
 		
-		l.str = l.str.substr(0, pos) + ll.str.substr(topos);
+		l.SetText(l.Text().substr(0, pos) + ll.Text().substr(topos));
 		
-		UpdateLineMetadata(l);
-		displayLengths.Increment(l.displayLength);
+		displayLengths.Increment(l.DisplayLength());
 		
 		
 		// Delete the other lines
 		
 		for (int i = line; i < toline; i++) {
 			DocumentLine& nl = lines[line];
-			displayLengths.Decrement(nl.displayLength);
+			displayLengths.Decrement(nl.DisplayLength());
 			lines.erase(lines.begin() + line + 1);
 		}
 	}
@@ -802,13 +789,13 @@ std::string EditorDocument::Get(int line, int pos, int toline, int topos)
 		
 		DocumentLine& l = lines[line];
 		
-		if (pos >= l.str.length()) pos = l.str.length();
+		if (pos >= l.Text().length()) pos = l.Text().length();
 		if (pos < 0) pos = 0;
 		
-		if (topos >= l.str.length()) topos = l.str.length();
+		if (topos >= l.Text().length()) topos = l.Text().length();
 		if (topos < 0) topos = 0;
 		
-		return l.str.substr(pos, topos - pos);
+		return l.Text().substr(pos, topos - pos);
 	}
 	
 	if (toline > line) {
@@ -817,17 +804,17 @@ std::string EditorDocument::Get(int line, int pos, int toline, int topos)
 		
 		DocumentLine& l = lines[line];
 		
-		if (pos >= l.str.length()) pos = l.str.length();
+		if (pos >= l.Text().length()) pos = l.Text().length();
 		if (pos < 0) pos = 0;
 		
-		std::string s = l.str.substr(pos);
+		std::string s = l.Text().substr(pos);
 		
 		
 		// Get the other lines
 		
 		for (int i = line + 1; i < toline; i++) {
 			DocumentLine& nl = lines[i];
-			s += "\n" + nl.str;
+			s += "\n" + nl.Text();
 		}
 		
 		
@@ -835,10 +822,10 @@ std::string EditorDocument::Get(int line, int pos, int toline, int topos)
 		
 		DocumentLine& ll = lines[toline];
 		
-		if (topos >= ll.str.length()) topos = ll.str.length();
+		if (topos >= ll.Text().length()) topos = ll.Text().length();
 		if (topos < 0) topos = 0;
 		
-		return s + "\n" + ll.str.substr(0, topos);
+		return s + "\n" + ll.Text().substr(0, topos);
 	}
 	
 	assert(0);
@@ -960,6 +947,8 @@ void EditorDocument::FinalizeEditAction(void)
 	undo.push_back(currentUndo);
 	currentUndo = NULL;
 }
+
+
 
 
 

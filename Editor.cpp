@@ -366,7 +366,7 @@ void Editor::PaintLine(int line)
 		// TODO Make more efficient
 		
 		for (int l = 0; l <= line; l++) {
-			if (!doc->LineObject(l)->validParse
+			if (!doc->LineObject(l)->ValidParse()
 				|| (l > 0 && !doc->LineObject(l)->ParserStateFollows(doc->LineObject(l-1)))) {
 				for (int i = l; i <= line; i++) {
 					parser->Parse(*doc->LineObject(i),
@@ -391,12 +391,12 @@ void Editor::PaintLine(int line)
 		charColors[i].second = FGColor();
 	}
 	
-	if (parser != NULL && objLine != NULL && !objLine->parserStates.empty()) {
+	if (parser != NULL && objLine != NULL && !objLine->ParserStates().empty()) {
 		size_t stateIndex = 0;
 		for (size_t i = 0; i < lineLength; i++) {
-			while (stateIndex + 1 < objLine->parserStates.size()
-			    && objLine->parserStates[stateIndex + 1].first <= i) stateIndex++;
-			ParserEnvironment* env = objLine->parserStates[stateIndex].second.Environment();
+			while (stateIndex + 1 < objLine->ParserStates().size()
+			    && objLine->ParserStates()[stateIndex + 1].first <= i) stateIndex++;
+			ParserEnvironment* env = objLine->ParserStates()[stateIndex].second.Environment();
 			if (env != NULL) {
 				charColors[i].second = env->Color();
 			}
@@ -1494,11 +1494,13 @@ void Editor::Paste(void)
 		int idx = doc->StringPosition(row, actualCol);
 		const char* line = doc->Line(row);
 		std::string s = line;
-		actualCol = col = doc->DisplayLength((s.substr(0, idx) + str).c_str());
+		DocumentLine l; l.SetText(s.substr(0, idx) + str);
+		actualCol = col = l.DisplayLength();
 	}
 	else {
 		last++;
-		actualCol = col = doc->DisplayLength(last);
+		DocumentLine l; l.SetText(last);
+		actualCol = col = l.DisplayLength();
 	}
 	
 	
@@ -1867,6 +1869,8 @@ void Editor::OnKeyPressed(int key)
 void Editor::OnMouseEvent(int row, int column, mmask_t buttonState)
 {
 	if (doc == NULL) return;
+	
+	doc->FinalizeEditAction();
 	MoveDocumentCursor(doc->PageStart() + row, colStart + column);
 }
 
@@ -1989,6 +1993,8 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
+
 
 
 

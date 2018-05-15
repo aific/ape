@@ -203,7 +203,7 @@ void ParserState::Clear()
  *
  * @return the latest environment in the stack
  */
-ParserEnvironment* ParserState::Environment()
+ParserEnvironment* ParserState::Environment() const
 {
 	if (environmentStack.empty()) return NULL;
 	return environmentStack[environmentStack.size() - 1];
@@ -341,6 +341,7 @@ void Parser::Parse(DocumentLine& line, const DocumentLine* previous)
 	
 	line.validParse = true;
 }
+
 
 
 

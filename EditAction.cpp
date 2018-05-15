@@ -66,21 +66,9 @@ EditAction::~EditAction(void)
  * @param row the row
  * @return the line
  */
-struct _DocumentLine& EditAction::Line(EditorDocument* doc, int row)
+DocumentLine& EditAction::Line(EditorDocument* doc, int row)
 {
 	return doc->lines[row];
-}
-
-
-/**
- * Update the metadata of a line
- * 
- * @param doc the document
- * @param line the line
- */
-void EditAction::UpdateLineMetadata(EditorDocument* doc, struct _DocumentLine& line)
-{
-	doc->UpdateLineMetadata(line);
 }
 
 
@@ -106,10 +94,9 @@ Histogram& EditAction::DisplayLengths(EditorDocument* doc)
 void EditAction::InsertLine(EditorDocument* doc, int row, const char* contents)
 {
 	DocumentLine l;
-	l.str = contents;
+	l.SetText(contents);
 	
-	UpdateLineMetadata(doc, l);
-	doc->displayLengths.Increment(l.displayLength);
+	doc->displayLengths.Increment(l.DisplayLength());
 	
 	doc->lines.insert(doc->lines.begin() + row, 1, l);
 }
@@ -124,7 +111,7 @@ void EditAction::InsertLine(EditorDocument* doc, int row, const char* contents)
 void EditAction::DeleteLine(EditorDocument* doc, int row)
 {
 	DocumentLine& l = Line(doc, row);
-	doc->displayLengths.Decrement(l.displayLength);
+	doc->displayLengths.Decrement(l.DisplayLength());
 	
 	doc->lines.erase(doc->lines.begin() + row);
 }
@@ -270,12 +257,13 @@ EA_InsertChar::~EA_InsertChar(void)
 void EA_InsertChar::Undo(EditorDocument* doc)
 {
 	DocumentLine& l = Line(doc, row);
-	DisplayLengths(doc).Decrement(l.displayLength);
+	DisplayLengths(doc).Decrement(l.DisplayLength());
 	
-	l.str.erase(pos, 1);
+	std::string s = l.Text();
+	s.erase(pos, 1);
+	l.SetText(s);
 	
-	UpdateLineMetadata(doc, l);
-	DisplayLengths(doc).Increment(l.displayLength);
+	DisplayLengths(doc).Increment(l.DisplayLength());
 }
 
 
@@ -287,12 +275,13 @@ void EA_InsertChar::Undo(EditorDocument* doc)
 void EA_InsertChar::Redo(EditorDocument* doc)
 {
 	DocumentLine& l = Line(doc, row);
-	DisplayLengths(doc).Decrement(l.displayLength);
+	DisplayLengths(doc).Decrement(l.DisplayLength());
 	
-	l.str.insert(pos, 1, ch);
+	std::string s = l.Text();
+	s.insert(pos, 1, ch);
+	l.SetText(s);
 	
-	UpdateLineMetadata(doc, l);
-	DisplayLengths(doc).Increment(l.displayLength);
+	DisplayLengths(doc).Increment(l.DisplayLength());
 }
 
 
@@ -327,12 +316,13 @@ EA_DeleteChar::~EA_DeleteChar(void)
 void EA_DeleteChar::Undo(EditorDocument* doc)
 {
 	DocumentLine& l = Line(doc, row);
-	DisplayLengths(doc).Decrement(l.displayLength);
+	DisplayLengths(doc).Decrement(l.DisplayLength());
 	
-	l.str.insert(pos, 1, ch);
+	std::string s = l.Text();
+	s.insert(pos, 1, ch);
+	l.SetText(s);
 	
-	UpdateLineMetadata(doc, l);
-	DisplayLengths(doc).Increment(l.displayLength);
+	DisplayLengths(doc).Increment(l.DisplayLength());
 }
 
 
@@ -344,12 +334,13 @@ void EA_DeleteChar::Undo(EditorDocument* doc)
 void EA_DeleteChar::Redo(EditorDocument* doc)
 {
 	DocumentLine& l = Line(doc, row);
-	DisplayLengths(doc).Decrement(l.displayLength);
+	DisplayLengths(doc).Decrement(l.DisplayLength());
 	
-	l.str.erase(pos, 1);
+	std::string s = l.Text();
+	s.erase(pos, 1);
+	l.SetText(s);
 	
-	UpdateLineMetadata(doc, l);
-	DisplayLengths(doc).Increment(l.displayLength);
+	DisplayLengths(doc).Increment(l.DisplayLength());
 }
 
 
@@ -469,12 +460,11 @@ EA_ReplaceLine::~EA_ReplaceLine(void)
 void EA_ReplaceLine::Undo(EditorDocument* doc)
 {
 	DocumentLine& l = Line(doc, row);
-	DisplayLengths(doc).Decrement(l.displayLength);
+	DisplayLengths(doc).Decrement(l.DisplayLength());
 	
-	l.str = original;
+	l.SetText(original);
 	
-	UpdateLineMetadata(doc, l);
-	DisplayLengths(doc).Increment(l.displayLength);
+	DisplayLengths(doc).Increment(l.DisplayLength());
 }
 
 
@@ -486,12 +476,11 @@ void EA_ReplaceLine::Undo(EditorDocument* doc)
 void EA_ReplaceLine::Redo(EditorDocument* doc)
 {
 	DocumentLine& l = Line(doc, row);
-	DisplayLengths(doc).Decrement(l.displayLength);
+	DisplayLengths(doc).Decrement(l.DisplayLength());
 	
-	l.str = contents;
+	l.SetText(contents);
 	
-	UpdateLineMetadata(doc, l);
-	DisplayLengths(doc).Increment(l.displayLength);
+	DisplayLengths(doc).Increment(l.DisplayLength());
 }
 
 
@@ -636,3 +625,5 @@ void CompoundEditAction::Redo(EditorDocument* doc)
 	if (actions.empty()) return;
 	for (int i = 0; i < actions.size(); i++) actions[i]->Redo(doc);
 }
+
+

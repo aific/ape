@@ -44,13 +44,16 @@
 #include "Parser.h"
 
 class EditorDocument;
+class Parser;
 
 
 /**
- * A line
+ * A line in the document
  */
-typedef struct _DocumentLine
+class DocumentLine
 {
+	friend class Parser;	// XXX
+	
 	std::string str;
 	int displayLength;
 	
@@ -58,19 +61,30 @@ typedef struct _DocumentLine
 	std::vector<std::pair<unsigned, ParserState>> parserStates;
 	ParserState initialParserState;
 	bool validParse;
+
+
+protected:
+
+	/**
+	 * Perform actions after updating the line
+	 */
+	virtual void LineUpdated();
+
+
+public:
 	
-	_DocumentLine(void) {
+	DocumentLine(void) {
 		str = std::string();
 		displayLength = 0;
 		parserStates.clear();
 		validParse = false;
 	}
 	
-	_DocumentLine(const _DocumentLine& l) {
+	DocumentLine(const DocumentLine& l) {
 		*this = l;
 	}
 	
-	_DocumentLine& operator=(const _DocumentLine& l) {
+	DocumentLine& operator=(const DocumentLine& l) {
 		str = l.str;
 		displayLength = l.displayLength;
 		parserStates = l.parserStates;
@@ -79,10 +93,81 @@ typedef struct _DocumentLine
 		return *this;
 	}
 	
-	void ClearParsing(void) {
+	
+	/**
+	 * Get the text of the line
+	 *
+	 * @return the text
+	 */
+	inline const std::string& Text() const
+	{
+		return str;
+	}
+	
+	
+	/**
+	 * Set the text of the line
+	 *
+	 * @param text the text
+	 */
+	inline void SetText(const std::string& text)
+	{
+		str = text;
+		LineUpdated();
+	}
+	
+	
+	/**
+	 * Set the text of the line
+	 *
+	 * @param text the text
+	 */
+	inline void SetText(const char* text)
+	{
+		str = text;
+		LineUpdated();
+	}
+	
+	
+	/**
+	 * Get the display length
+	 *
+	 * @return the display length
+	 */
+	inline int DisplayLength()
+	{
+		return displayLength;
+	}
+	
+	
+	/**
+	 * Clear parsing
+	 */
+	void ClearParsing(void)
+	{
 		parserStates.clear();
 		validParse = false;
 	}
+	
+	
+	/**
+	 * Return whether the parsing is valid
+	 *
+	 * @return true if it is valid
+	 */
+	inline bool ValidParse() const { return validParse; }
+	
+	
+	/**
+	 * Get the parser states
+	 *
+	 * @return the parser states (key: character offset, value: the parser state)
+	 */
+	inline const std::vector<std::pair<unsigned, ParserState>>& ParserStates() const
+	{
+		return parserStates;
+	}
+	
 	
 	/**
 	 * Check if the last parser state of the given line matches the initial parser
@@ -91,7 +176,7 @@ typedef struct _DocumentLine
 	 * @param other the other state
 	 * @return true if they match
 	 */
-	inline bool ParserStateFollows(const _DocumentLine* other) const {
+	inline bool ParserStateFollows(const DocumentLine* other) const {
 		if (other == NULL) return false;
 		if (parserStates.empty()) return false;
 		if (other->parserStates.empty()) return false;
@@ -99,7 +184,7 @@ typedef struct _DocumentLine
 			== other->parserStates[other->parserStates.size()-1].second;
 	}
 	
-} DocumentLine;
+};
 
 
 /**
@@ -185,13 +270,6 @@ class EditorDocument
 	
 	Parser* parser;
 	
-	
-	/**
-	 * Update the line metadata
-	 * 
-	 * @param l the line object
-	 */
-	void UpdateLineMetadata(DocumentLine& l);
 	
 	/**
 	 * Prepare the document for an edit
@@ -299,7 +377,7 @@ public:
 	 */
 	inline const char* Line(int line)
 	{
-		return line >= lines.size() ? "" : lines[line].str.c_str();
+		return line >= lines.size() ? "" : lines[line].Text().c_str();
 	}
 	
 	/**
@@ -329,14 +407,6 @@ public:
 	inline bool Modified(void) { return modified; }
 	
 	/**
-	 * Get the display length of the line
-	 * 
-	 * @param line the line string
-	 * @return the display length
-	 */
-	int DisplayLength(const char* line);
-	
-	/**
 	 * Return the display length of a line
 	 * 
 	 * @param line the line number
@@ -344,7 +414,7 @@ public:
 	 */
 	inline int DisplayLength(int line)
 	{
-		return line >= lines.size() ? 0 : lines[line].displayLength;
+		return line >= lines.size() ? 0 : lines[line].DisplayLength();
 	}
 	
 	/**
@@ -501,8 +571,5 @@ public:
 };
 
 #endif
-
-
-
 
 

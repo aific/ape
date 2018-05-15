@@ -44,8 +44,7 @@
 /*
  * The document line
  */
-struct _DocumentLine;
-typedef struct _DocumentLine DocumentLine;
+class DocumentLine;
 
 /*
  * A parser environment
@@ -260,7 +259,7 @@ public:
 	 *
 	 * @return the latest environment in the stack
 	 */
-	ParserEnvironment* Environment();
+	ParserEnvironment* Environment() const;
 	
 	/**
 	 * Compare this parser state to another state
@@ -333,5 +332,6 @@ public:
 
 
 #endif
+
 
 

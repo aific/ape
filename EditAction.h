@@ -37,9 +37,9 @@
 
 #include <vector>
 
+class DocumentLine;
 class EditorDocument;
 class Histogram;
-struct _DocumentLine;
 
 
 /**
@@ -87,15 +87,7 @@ protected:
 	 * @param row the row
 	 * @return the line
 	 */
-	struct _DocumentLine& Line(EditorDocument* doc, int row);
-	
-	/**
-	 * Update the metadata of a line
-	 * 
-	 * @param doc the document
-	 * @param line the line
-	 */
-	void UpdateLineMetadata(EditorDocument* doc, struct _DocumentLine& line);
+	DocumentLine& Line(EditorDocument* doc, int row);
 	
 	/**
 	 * Return the line display lengths
@@ -614,3 +606,4 @@ public:
 
 
 #endif
+
