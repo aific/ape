@@ -36,6 +36,7 @@
 #define __DOCUMENT_H
 
 #include <deque>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -61,6 +62,8 @@ class DocumentLine
 	std::vector<std::pair<unsigned, ParserState>> parserStates;
 	ParserState initialParserState;
 	bool validParse;
+	
+	std::unique_ptr<DocumentLine> processedLine;
 
 
 protected:
@@ -73,25 +76,24 @@ protected:
 
 public:
 	
-	DocumentLine(void) {
-		str = std::string();
-		displayLength = 0;
-		parserStates.clear();
-		validParse = false;
-	}
+	/**
+	 * Create a new instance of DocumentLine
+	 */
+	DocumentLine();
 	
-	DocumentLine(const DocumentLine& l) {
-		*this = l;
-	}
+	/**
+	 * Destroy the line
+	 */
+	virtual ~DocumentLine();
 	
-	DocumentLine& operator=(const DocumentLine& l) {
-		str = l.str;
-		displayLength = l.displayLength;
-		parserStates = l.parserStates;
-		initialParserState = l.initialParserState;
-		validParse = l.validParse;
-		return *this;
-	}
+	
+	// Default move constructor and operator, but no copying
+	
+	DocumentLine(const DocumentLine& l) = delete;
+	DocumentLine(DocumentLine&& l) = default;
+	
+	DocumentLine& operator=(const DocumentLine& l) = delete;
+	DocumentLine& operator=(DocumentLine&& l) = default;
 	
 	
 	/**
@@ -571,5 +573,4 @@ public:
 };
 
 #endif
-
 

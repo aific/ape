@@ -39,6 +39,27 @@
 
 
 /**
+ * Create a new instance of DocumentLine
+ */
+DocumentLine::DocumentLine()
+{
+	str = "";
+	displayLength = 0;
+	parserStates.clear();
+	validParse = false;
+	processedLine.reset();
+}
+
+
+/**
+ * Destroy the line
+ */
+DocumentLine::~DocumentLine()
+{
+}
+
+
+/**
  * Perform actions after updating the line
  */
 void DocumentLine::LineUpdated()
@@ -125,8 +146,8 @@ void EditorDocument::Clear(void)
 	displayLengths.Clear();
 
 	DocumentLine l;
-	lines.push_back(l);
 	displayLengths.Increment(l.DisplayLength());
+	lines.push_back(std::move(l));
 
 	fileName = "";
 	
@@ -180,8 +201,8 @@ ReturnExt EditorDocument::LoadFromFile(const char* file)
 
 			DocumentLine l;
 			l.SetText(buffer);
-			lines.push_back(l);
 			displayLengths.Increment(l.DisplayLength());
+			lines.push_back(std::move(l));
 
 			continue;
 		}
@@ -202,8 +223,8 @@ ReturnExt EditorDocument::LoadFromFile(const char* file)
 
 	DocumentLine l;
 	l.SetText(buffer);
-	lines.push_back(l);
 	displayLengths.Increment(l.DisplayLength());
+	lines.push_back(std::move(l));
 
 
 	// Finish
@@ -438,8 +459,8 @@ void EditorDocument::Append(const char* line)
 	
 	l.SetText(line);
 	
-	lines.push_back(l);
 	displayLengths.Increment(l.DisplayLength());
+	lines.push_back(std::move(l));
 	
 	modified = true;
 }
@@ -458,8 +479,8 @@ void EditorDocument::Insert(int pos, const char* line)
 	
 	l.SetText(line);
 	
-	lines.insert(lines.begin() + pos, 1, l);
 	displayLengths.Increment(l.DisplayLength());
+	lines.insert(lines.begin() + pos, std::move(l));
 	
 	modified = true;
 	
@@ -621,15 +642,15 @@ void EditorDocument::InsertStringEx(int line, int pos, const char* str)
 				else if (*end == '\0') {
 					DocumentLine nl;
 					nl.SetText(std::string(buf) + rest);
-					lines.insert(lines.begin() + line + li, 1, nl);
 					displayLengths.Increment(nl.DisplayLength());
+					lines.insert(lines.begin() + line + li, std::move(nl));
 					break;
 				}
 				else {
 					DocumentLine nl;
 					nl.SetText(std::string(buf));
-					lines.insert(lines.begin() + line + li, 1, nl);
 					displayLengths.Increment(nl.DisplayLength());
+					lines.insert(lines.begin() + line + li, std::move(nl));
 				}
 			}
 			else {
@@ -947,11 +968,6 @@ void EditorDocument::FinalizeEditAction(void)
 	undo.push_back(currentUndo);
 	currentUndo = NULL;
 }
-
-
-
-
-
 
 
 

@@ -98,7 +98,7 @@ void EditAction::InsertLine(EditorDocument* doc, int row, const char* contents)
 	
 	doc->displayLengths.Increment(l.DisplayLength());
 	
-	doc->lines.insert(doc->lines.begin() + row, 1, l);
+	doc->lines.insert(doc->lines.begin() + row, std::move(l));
 }
 
 
@@ -625,5 +625,6 @@ void CompoundEditAction::Redo(EditorDocument* doc)
 	if (actions.empty()) return;
 	for (int i = 0; i < actions.size(); i++) actions[i]->Redo(doc);
 }
+
 
 

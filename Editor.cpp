@@ -1266,7 +1266,8 @@ void Editor::NewLine(void)
 	if (lastAction != EEAT_Enter) doc->FinalizeEditAction();
 	if (selection) DeleteSelection();
 	
-	const char* line = doc->Line(row);
+	std::string lineStr = doc->Line(row);
+	const char* line = lineStr.c_str();
 	int idx = doc->StringPosition(row, actualCol);
 	
 	EnsureValidScroll();
@@ -1993,6 +1994,7 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
 
 
 
