@@ -146,13 +146,17 @@ class Editor : public Component
 	
 	/**
 	 * Move the cursor one page up
+	 * 
+	 * @param shift whether the Shift button was held
 	 */
-	void MoveCursorPageUp(void);
+	void MoveCursorPageUp(bool shift = false);
 	
 	/**
 	 * Move the cursor one page down
+	 * 
+	 * @param shift whether the Shift button was held
 	 */
-	void MoveCursorPageDown(void);
+	void MoveCursorPageDown(bool shift = false);
 	
 	/**
 	 * Update the actual cursor position
@@ -394,6 +398,7 @@ public:
 };
 
 #endif
+
 
 
 

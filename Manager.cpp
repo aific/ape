@@ -667,6 +667,12 @@ void Manager::ProcessMessages(void)
 
 		if (key == KEY_ESC) {
 			key = getch();
+			
+			//log(LL_DEBUG, "> %c %d", key, key);
+			//key = getch(); log(LL_DEBUG, "- %c %d", key, key);
+			//key = getch(); log(LL_DEBUG, "- %c %d", key, key);
+			//key = getch(); log(LL_DEBUG, "- %c %d", key, key);continue;
+			
 			if (key == ERR) key = KEY_ESC;
 
 			else if (key == 'O') {
@@ -696,14 +702,47 @@ void Manager::ProcessMessages(void)
 				key = getch();
 				if (key == '1') {
 					key = getch();
+					
 					switch (key) {
 						case '~': key = KEY_HOME; break;
 					}
+
+					if (key == ';') {
+						key = getch();
+						if (key == '1') {
+							key = getch();
+							if (key == '0') {
+								key = getch();
+								switch (key) {
+									case 'A': key = KEY_SHIFT_ALT_UP; break;
+									case 'B': key = KEY_SHIFT_ALT_DOWN; break;
+									case 'C': key = KEY_SHIFT_ALT_RIGHT; break;
+									case 'D': key = KEY_SHIFT_ALT_LEFT; break;
+									case 'H': key = KEY_SHIFT_ALT_HOME; break;
+									case 'F': key = KEY_SHIFT_ALT_END; break;
+								}
+							}
+						}
+					}
 				}
+			
 				else if (key == '4') {
 					key = getch();
 					switch (key) {
 						case '~': key = KEY_END; break;
+					}
+				}
+			}
+
+			else if (key == KEY_ESC) {
+				key = getch();
+				if (key == '[') {
+					key = getch();
+					switch (key) {
+						case 'A': key = KEY_ALT_UP; break;
+						case 'B': key = KEY_ALT_DOWN; break;
+						case 'C': key = KEY_ALT_RIGHT; break;
+						case 'D': key = KEY_ALT_LEFT; break;
 					}
 				}
 			}
@@ -855,5 +894,7 @@ void Manager::SetStatus(const char* s)
 	status = s;
 	PaintStatus();
 }
+
+
 
 

@@ -64,12 +64,22 @@
 
 #define KEY_CTRL(x) ((x) == ' ' ? 0 : (x) - 'a' + 1)
 
-#define KEY_ESC			27
-#define KEY_RETURN		10
-#define KEY_SHIFT_UP	1001
-#define KEY_SHIFT_DOWN	1002
-#define KEY_SHIFT_LEFT	1003
-#define KEY_SHIFT_RIGHT	1004
-#define KEY_SHIFT_HOME	1005
-#define KEY_SHIFT_END	1006
+#define KEY_ESC				27
+#define KEY_RETURN			10
+#define KEY_SHIFT_UP		1001
+#define KEY_SHIFT_DOWN		1002
+#define KEY_SHIFT_LEFT		1003
+#define KEY_SHIFT_RIGHT		1004
+#define KEY_SHIFT_HOME		1005
+#define KEY_SHIFT_END		1006
+#define KEY_ALT_UP			1011
+#define KEY_ALT_DOWN		1012
+#define KEY_ALT_LEFT		1013
+#define KEY_ALT_RIGHT		1014
+#define KEY_SHIFT_ALT_UP	1021
+#define KEY_SHIFT_ALT_DOWN	1022
+#define KEY_SHIFT_ALT_LEFT	1023
+#define KEY_SHIFT_ALT_RIGHT	1024
+#define KEY_SHIFT_ALT_HOME	1025
+#define KEY_SHIFT_ALT_END	1026
 

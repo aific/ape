@@ -599,12 +599,12 @@ void AbstractList::OnKeyPressed(int key)
 		return;
 	}
 	
-	if (key == KEY_PPAGE) {
+	if (key == KEY_PPAGE || key == KEY_ALT_UP) {
 		MoveCursorPageUp();
 		return;
 	}
 
-	if (key == KEY_NPAGE) {
+	if (key == KEY_NPAGE || key == KEY_ALT_DOWN) {
 		MoveCursorPageDown();
 		return;
 	}
@@ -657,4 +657,5 @@ void AbstractList::OnResize(int oldRows, int oldCols, int newRows, int newCols)
 	Component::OnResize(oldRows, oldCols, newRows, newCols);
 	EnsureValidScroll();
 }
+
 

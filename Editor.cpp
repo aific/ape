@@ -1133,10 +1133,25 @@ void Editor::MoveCursorVeryRight(bool shift)
 
 /**
  * Move the cursor one page up
+ * 
+ * @param shift whether the Shift button was held
  */
-void Editor::MoveCursorPageUp(void)
+void Editor::MoveCursorPageUp(bool shift)
 {
 	EnsureValidScroll();
+	
+	
+	// Selection logic
+	
+	if (shift && !selection) {
+		selRow = row;
+		selCol = actualCol;
+		selection = true;
+	}
+	
+	if (!shift && selection) {
+		selection = false;
+	}
 	
 	
 	// Set the new page start
@@ -1175,10 +1190,25 @@ void Editor::MoveCursorPageUp(void)
 
 /**
  * Move the cursor one page down
+ * 
+ * @param shift whether the Shift button was held
  */
-void Editor::MoveCursorPageDown(void)
+void Editor::MoveCursorPageDown(bool shift)
 {
 	EnsureValidScroll();
+	
+	
+	// Selection logic
+	
+	if (shift && !selection) {
+		selRow = row;
+		selCol = actualCol;
+		selection = true;
+	}
+	
+	if (!shift && selection) {
+		selection = false;
+	}
 	
 	
 	// Set the new page start
@@ -1759,15 +1789,27 @@ void Editor::OnKeyPressed(int key)
 	}
 	
 	if (multiline) {
-		if (key == KEY_PPAGE) {
+		if (key == KEY_PPAGE || key == KEY_ALT_UP) {
 			doc->FinalizeEditAction();
 			MoveCursorPageUp();
 			return;
 		}
 		
-		if (key == KEY_NPAGE) {
+		if (key == KEY_NPAGE || key == KEY_ALT_DOWN) {
 			doc->FinalizeEditAction();
 			MoveCursorPageDown();
+			return;
+		}
+		
+		if (key == KEY_SHIFT_ALT_UP) {
+			doc->FinalizeEditAction();
+			MoveCursorPageUp(true);
+			return;
+		}
+		
+		if (key == KEY_SHIFT_ALT_DOWN) {
+			doc->FinalizeEditAction();
+			MoveCursorPageDown(true);
 			return;
 		}
 	}
@@ -1994,6 +2036,8 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
+
 
 
 
