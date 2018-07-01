@@ -126,6 +126,20 @@ class Editor : public Component
 	void MoveCursorRight(bool shift = false);
 	
 	/**
+	 * Move the cursor to the beginning of the word or to the previous word
+	 * 
+	 * @param shift whether the Shift button was held
+	 */
+	void MoveCursorBeginningWord(bool shift = false);
+	
+	/**
+	 * Move the cursor to the end of the word or to the next word
+	 * 
+	 * @param shift whether the Shift button was held
+	 */
+	void MoveCursorEndWord(bool shift = false);
+	
+	/**
 	 * Move the cursor to the very left
 	 */
 	void MoveCursorVeryLeft(void);
@@ -398,6 +412,7 @@ public:
 };
 
 #endif
+
 
 
 

@@ -1013,6 +1013,169 @@ void Editor::MoveCursorRight(bool shift)
 
 
 /**
+ * Determine if the character is a part of a word
+ *
+ * @param c the character
+ * @return true if it is a part of a word
+ */
+inline bool isWordCharacter(const char c)
+{
+	return isalnum(c) || c == '_';
+}
+
+
+/**
+ * Move the cursor to the beginning of the word or to the previous word
+ * 
+ * @param shift whether the Shift button was held
+ */
+void Editor::MoveCursorBeginningWord(bool shift)
+{
+	if (col <= 0 && row <= 0) return;
+	
+	bool needsPaint = EnsureValidScroll();
+	
+	
+	// Selection logic
+	
+	if (shift && !selection) {
+		selRow = row;
+		selCol = actualCol;
+		selection = true;
+	}
+	
+	if (!shift && selection) {
+		selection = false;
+		needsPaint = true;
+	}
+	
+	if (selection) needsPaint = true;
+	
+	
+	// Cursor movement and scrolling logic
+	
+	if (col == 0) {
+		row--;
+		col = doc->DisplayLength(row);
+		needsPaint = needsPaint || EnsureValidScroll();
+	}
+	else {
+	
+		const char* line = doc->Line(row);
+		col = actualCol - 1;
+		int idx = doc->StringPosition(row, col);
+		
+		if (isspace(line[idx])) {
+			while (col > 0 && isspace(line[idx])) {
+				col--;
+				idx = doc->StringPosition(row, col);
+			}
+		}
+		
+		if (!isWordCharacter(line[idx])) {
+			while (col > 0 && !isWordCharacter(line[idx-1])
+					&& !isspace(line[idx-1])) {
+				col--;
+				idx = doc->StringPosition(row, col);
+			}
+		}
+		else {
+			while (col > 0 && isWordCharacter(line[idx-1])) {
+				col--;
+				idx = doc->StringPosition(row, col);
+			}
+		}
+	}
+	
+	if (col < colStart) {
+		colStart = col;
+		needsPaint = true;
+	}
+	
+	UpdateActualCursorPosition();
+	
+	
+	// Finalize
+	
+	if (needsPaint) Paint();
+	UpdateCursor();
+}
+
+
+/**
+ * Move the cursor to the end of the word or to the next word
+ * 
+ * @param shift whether the Shift button was held
+ */
+void Editor::MoveCursorEndWord(bool shift)
+{
+	bool needsPaint = EnsureValidScroll();
+	
+	
+	// Selection logic
+	
+	if (shift && !selection) {
+		selRow = row;
+		selCol = actualCol;
+		selection = true;
+	}
+	
+	if (!shift && selection) {
+		selection = false;
+		needsPaint = true;
+	}
+	
+	if (selection) needsPaint = true;
+	
+	
+	// Cursor movement and scrolling logic
+	
+	int len = doc->DisplayLength(row);
+	if (actualCol + 1 > len && row < doc->NumLines() - 1) {
+		row++;
+		col = 0;
+		needsPaint = needsPaint || EnsureValidScroll();
+	}
+	else {
+	
+		const char* line = doc->Line(row);
+		col = actualCol + 1;
+		int idx = doc->StringPosition(row, col);
+		
+		if (isspace(line[idx])) {
+			while (isspace(line[idx])) {
+				col++;
+				idx = doc->StringPosition(row, col);
+			}
+		}
+		
+		if (!isWordCharacter(line[idx])) {
+			while (line[idx+1] != '\0' && !isWordCharacter(line[idx+1])
+					&& !isspace(line[idx+1])) {
+				col++;
+				idx = doc->StringPosition(row, col);
+			}
+		}
+		else {
+			while (line[idx+1] != '\0' && isWordCharacter(line[idx+1])) {
+				col++;
+				idx = doc->StringPosition(row, col);
+			}
+		}
+	}
+	
+	if (col - colStart > Columns() - 1) {
+		colStart = col - Columns() + 1;;
+		needsPaint = true;
+	}
+	
+	UpdateActualCursorPosition();
+	if (needsPaint) Paint();
+	UpdateCursor();
+}
+
+
+/**
  * Move the cursor to the very left
  */
 void Editor::MoveCursorVeryLeft(void)
@@ -1028,7 +1191,6 @@ void Editor::MoveCursorVeryLeft(void)
 	if (needsPaint) Paint();
 	UpdateCursor();
 }
-
 
 
 /**
@@ -1775,6 +1937,18 @@ void Editor::OnKeyPressed(int key)
 		MoveCursorRight();
 		return;
 	}
+
+	if (key == KEY_ALT_LEFT) {
+		doc->FinalizeEditAction();
+		MoveCursorBeginningWord();
+		return;
+	}
+	
+	if (key == KEY_ALT_RIGHT) {
+		doc->FinalizeEditAction();
+		MoveCursorEndWord();
+		return;
+	}
 	
 	if (key == KEY_HOME) {
 		doc->FinalizeEditAction();
@@ -1840,6 +2014,18 @@ void Editor::OnKeyPressed(int key)
 	if (key == KEY_SHIFT_RIGHT) {
 		doc->FinalizeEditAction();
 		MoveCursorRight(true);
+		return;
+	}
+
+	if (key == KEY_SHIFT_ALT_LEFT) {
+		doc->FinalizeEditAction();
+		MoveCursorBeginningWord(true);
+		return;
+	}
+	
+	if (key == KEY_SHIFT_ALT_RIGHT) {
+		doc->FinalizeEditAction();
+		MoveCursorEndWord(true);
 		return;
 	}
 	
@@ -2036,6 +2222,9 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
+
+
+
 
 
 
