@@ -269,7 +269,7 @@ ReturnExt EditorDocument::SaveToFile(const char* file, bool switchFile)
 			unlink(tmp);
 			return ReturnExt(false, "Error while writing", errno);
 		}
-		fputc('\n', f);
+		if (i + 1 < numLines) fputc('\n', f);
 	}
 
 	fclose(f);
@@ -968,6 +968,7 @@ void EditorDocument::FinalizeEditAction(void)
 	undo.push_back(currentUndo);
 	currentUndo = NULL;
 }
+
 
 
 
