@@ -47,6 +47,11 @@
 class DocumentLine;
 
 /*
+ * The document
+ */
+class EditorDocument;
+
+/*
  * A parser environment
  */
 class ParserEnvironment;
@@ -71,6 +76,7 @@ class ParserRule
 
 	bool mustStartLine;
 	bool mustEndLine;
+	bool wholeWord;
 	
 	int referenceCount;
 
@@ -163,6 +169,25 @@ public:
 	 	mustEndLine = value;
 	 	return this;
 	 }
+	
+	/**
+	 * Determine if this token must match a whole word
+	 *
+	 * @return true if the token must be a whole word
+	 */
+	inline bool WholeWord() const { return wholeWord; }
+	
+	/**
+	 * Set if this token must be a whole word
+	 *
+	 * @param value true to enable, false to disable
+	 * @return this object (for call chaining)
+	 */
+	inline ParserRule* SetWholeWord(bool value)
+	{
+		wholeWord = value;
+		return this;
+	}
 };
 
 
@@ -332,6 +357,3 @@ public:
 
 
 #endif
-
-
-

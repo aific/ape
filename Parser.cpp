@@ -55,6 +55,7 @@ ParserRule::ParserRule(const char* _token, bool _closeCurrent,
 	openEnvironment = _openEnvironment;
 	mustStartLine = false;
 	mustEndLine = false;
+	wholeWord = false;
 	referenceCount = 0;
 }
 
@@ -90,6 +91,17 @@ bool ParserRule::Matches(const char* line, unsigned pos)
 	if (mustEndLine) {
 		for (const char* p = line + pos + len; *p != '\0'; p++) {
 			if (!isspace(*p)) return false;
+		}
+	}
+	
+	if (wholeWord) {
+		if (pos > 0) {
+			char c = line[pos-1];
+			if (isalnum(c) || c == '_') return false;
+		}
+		if (pos + len < strlen(line)) {
+			char c = line[pos+len];
+			if (isalnum(c) || c == '_') return false;
 		}
 	}
 	
@@ -341,7 +353,3 @@ void Parser::Parse(DocumentLine& line, const DocumentLine* previous)
 	
 	line.validParse = true;
 }
-
-
-
-

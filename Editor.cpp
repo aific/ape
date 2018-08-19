@@ -83,7 +83,7 @@ Editor::Editor(Container* parent, bool _multiline, int _row, int _col, int rows,
 	r->SetMustEndLine(true);
 	preprocessor->AddRule(r);
 	
-	ParserEnvironment* singleLineComment = new ParserEnvironment("comment-sl", 6);
+	ParserEnvironment* singleLineComment = new ParserEnvironment("comment-sl", 2);
 	parser->AddEnvironment(singleLineComment);
 	
 	r = new ParserRule("//", false, singleLineComment);
@@ -94,7 +94,7 @@ Editor::Editor(Container* parent, bool _multiline, int _row, int _col, int rows,
 	r->SetMustEndLine(true);
 	singleLineComment->AddRule(r);
 	
-	ParserEnvironment* multiLineComment = new ParserEnvironment("comment-ml", 6);
+	ParserEnvironment* multiLineComment = new ParserEnvironment("comment-ml", 2);
 	parser->AddEnvironment(multiLineComment);
 	
 	r = new ParserRule("/*", false, multiLineComment);
@@ -104,7 +104,7 @@ Editor::Editor(Container* parent, bool _multiline, int _row, int _col, int rows,
 	r = new ParserRule("*/", true, NULL);
 	multiLineComment->AddRule(r);
 	
-	ParserEnvironment* stringLiteral = new ParserEnvironment("string", 3);
+	ParserEnvironment* stringLiteral = new ParserEnvironment("string", 5);
 	parser->AddEnvironment(stringLiteral);
 	
 	r = new ParserRule("\"", false, stringLiteral);
@@ -117,7 +117,7 @@ Editor::Editor(Container* parent, bool _multiline, int _row, int _col, int rows,
 	r = new ParserRule("\"", true, NULL);
 	stringLiteral->AddRule(r);
 	
-	ParserEnvironment* characterLiteral = new ParserEnvironment("character", 3);
+	ParserEnvironment* characterLiteral = new ParserEnvironment("character", 5);
 	parser->AddEnvironment(characterLiteral);
 	
 	r = new ParserRule("\'", false, characterLiteral);
@@ -129,6 +129,119 @@ Editor::Editor(Container* parent, bool _multiline, int _row, int _col, int rows,
 	
 	r = new ParserRule("\'", true, NULL);
 	characterLiteral->AddRule(r);
+	
+	ParserEnvironment* reservedWord = new ParserEnvironment("reserved", 6);
+	parser->AddEnvironment(reservedWord);
+	
+	static const char* RESERVED_WORDS[] = { "alignas",
+	"alignof",
+	"and",
+	"and_eq",
+	"asm",
+	"atomic_cancel",
+	"atomic_commit",
+	"atomic_noexcept",
+	"auto",
+	"bitand",
+	"bitor",
+	"bool",
+	"break",
+	"case",
+	"catch",
+	"char",
+	"char16_t",
+	"char32_t",
+	"class",
+	"compl",
+	"concept",
+	"const",
+	"constexpr",
+	"const_cast",
+	"continue",
+	"co_await",
+	"co_return",
+	"co_yield",
+	"decltype",
+	"default",
+	"delete",
+	"do",
+	"double",
+	"dynamic_cast",
+	"else",
+	"enum",
+	"explicit",
+	"export",
+	"extern",
+	"false",
+	"float",
+	"for",
+	"friend",
+	"goto",
+	"if",
+	"import",
+	"inline",
+	"int",
+	"long",
+	"module",
+	"mutable",
+	"namespace",
+	"new",
+	"noexcept",
+	"not",
+	"not_eq",
+	"nullptr",
+	"operator",
+	"or",
+	"or_eq",
+	"private",
+	"protected",
+	"public",
+	"reflexpr",
+	"register",
+	"reinterpret_cast",
+	"requires",
+	"return",
+	"short",
+	"signed",
+	"sizeof",
+	"static",
+	"static_assert",
+	"static_cast",
+	"struct",
+	"switch",
+	"synchronized",
+	"template",
+	"this",
+	"thread_local",
+	"throw",
+	"true",
+	"try",
+	"typedef",
+	"typeid",
+	"typename",
+	"union",
+	"unsigned",
+	"using",
+	"virtual",
+	"void",
+	"volatile",
+	"wchar_t",
+	"while",
+	"xor",
+	"xor_eq",
+	"override",
+	"final",
+	"audit",
+	"axiom",
+	"transaction_safe",
+	"transaction_safe_dynamic",
+	NULL };
+	
+	for (int i = 0; RESERVED_WORDS[i] != NULL; i++) {
+		r = new ParserRule(RESERVED_WORDS[i], true, reservedWord);
+		r->SetWholeWord(true);
+		global->AddRule(r);
+	}
 	
 	if (_multiline) {
 		doc->SetParser(parser);
