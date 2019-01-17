@@ -245,11 +245,64 @@ public:
 
 
 /**
+ * A collection of lines
+ *
+ * @author Peter Macko
+ */
+class DocumentLineCollection
+{
+
+public:
+
+	/**
+	 * Create an empty collection
+	 */
+	inline DocumentLineCollection() {}
+	
+	/**
+	 * Destroy the collection
+	 */
+	virtual ~DocumentLineCollection() {}
+	
+	/**
+	 * Get the number of lines
+	 * 
+	 * @return the number of lines
+	 */
+	virtual int NumLines(void) = 0;
+	
+	/**
+	 * Return a line
+	 * 
+	 * @param line the line number
+	 * @return the line string
+	 */
+	virtual const char* Line(int line) = 0;
+	
+	/**
+	 * Return the line object
+	 * 
+	 * @param line the line number
+	 * @return the line
+	 */
+	virtual DocumentLine* LineObject(int line) = 0;
+	
+	/**
+	 * Return the line object
+	 * 
+	 * @param line the line number
+	 * @return the line
+	 */
+	DocumentLine& operator[](int line) { return *LineObject(line); }
+};
+
+
+/**
  * The document
  *
  * @author Peter Macko
  */
-class EditorDocument
+class EditorDocument : public DocumentLineCollection
 {
 	friend class EditAction;
 	friend class UndoEntry;
@@ -351,13 +404,6 @@ public:
 	}
 	
 	/**
-	 * Get the number of lines
-	 * 
-	 * @return the number of lines
-	 */
-	inline int NumLines(void) { return lines.size(); }
-	
-	/**
 	 * Set the start of the page
 	 * 
 	 * @param start the page start line
@@ -372,12 +418,19 @@ public:
 	inline int PageStart(void) { return pageStart; }
 	
 	/**
+	 * Get the number of lines
+	 * 
+	 * @return the number of lines
+	 */
+	virtual int NumLines(void) { return lines.size(); }
+	
+	/**
 	 * Return a line
 	 * 
 	 * @param line the line number
 	 * @return the line string
 	 */
-	inline const char* Line(int line)
+	virtual const char* Line(int line)
 	{
 		return line >= lines.size() ? "" : lines[line].Text().c_str();
 	}
@@ -388,7 +441,7 @@ public:
 	 * @param line the line number
 	 * @return the line
 	 */
-	inline DocumentLine* LineObject(int line)
+	virtual DocumentLine* LineObject(int line)
 	{
 		return line >= lines.size() ? NULL : &lines[line];
 	}

@@ -267,6 +267,24 @@ void Parser::AddEnvironment(ParserEnvironment* environment)
 
 
 /**
+ * Parse the next chunk
+ *
+ * @param lines the document commection
+ * @param line the line number (0 based)
+ * @param offset the offset (0 based)
+ * @param newLine where to write the new line number
+ * @param newOffset where to write the new offset
+ */
+void Parser::Parse(DocumentLineCollection& lines, unsigned line, unsigned offset,
+                   unsigned& newLine, unsigned& newOffset)
+{
+	Parse(lines[line], line == 0 ? NULL : &lines[line-1]);
+	newLine = line + 1;
+	newOffset = 0;
+}
+
+
+/**
  * Parse the next line
  *
  * @param line the document line

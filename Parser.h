@@ -47,9 +47,9 @@
 class DocumentLine;
 
 /*
- * The document
+ * The document line collection
  */
-class EditorDocument;
+class DocumentLineCollection;
 
 /*
  * A parser environment
@@ -345,6 +345,18 @@ public:
 	 * @param environment the environment
 	 */
 	void AddEnvironment(ParserEnvironment* environment);
+	
+	/**
+	 * Parse the next chunk
+	 *
+	 * @param lines the document commection
+	 * @param line the line number (0 based)
+	 * @param offset the offset (0 based)
+	 * @param newLine where to write the new line number
+	 * @param newOffset where to write the new offset
+	 */
+	void Parse(DocumentLineCollection& lines, unsigned line, unsigned offset,
+	           unsigned& newLine, unsigned& newOffset);
 	
 	/**
 	 * Parse the next line
