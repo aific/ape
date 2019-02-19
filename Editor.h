@@ -94,8 +94,9 @@ class Editor : public Component
 	 *
 	 * @param newRow the new row
 	 * @param newCol the new column
+	 * @param shift whether the Shift button was held
 	 */
-	void MoveDocumentCursor(int newRow, int newCol);
+	void MoveDocumentCursor(int newRow, int newCol, bool shift = false);
 	
 	/**
 	 * Move the cursor up

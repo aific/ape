@@ -41,6 +41,8 @@
 #include "Window.h"
 #include "WindowSwitcher.h"
 
+#define APE_NUM_MOUSE_BUTTONS	5
+
 
 /**
  * Window manager
@@ -67,6 +69,10 @@ class Manager
 
 	int processMessagesDepth;
 	Window* openDialog;
+	
+	bool mouseButtonStates[APE_NUM_MOUSE_BUTTONS];
+	int lastMouseX, lastMouseY, lastMouseState;
+	int lastEffectiveMouseState;
 
 
 	/**

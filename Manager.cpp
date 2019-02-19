@@ -71,6 +71,14 @@ Manager::Manager(void)
 	openDialog = NULL;
 
 	clipboard = "";
+
+	for (int i = 0; i < APE_NUM_MOUSE_BUTTONS; i++) {
+		mouseButtonStates[i] = false;
+	}
+	lastMouseX = -1;
+	lastMouseY = -1;
+	lastMouseState = 0;
+	lastEffectiveMouseState = 0;
 }
 
 
@@ -115,8 +123,9 @@ void Manager::Initialize(void)
 	
 	// Initialize mouse
 	
-	mousemask(ALL_MOUSE_EVENTS, NULL);
-	mouseinterval(10 /* ms */);
+	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
+	mouseinterval(0 /* ms */);
+	printf("\033[?1002h\n");  // Configure the terminal to report mouse movements
 
 
 	// Get the screen size
@@ -167,6 +176,8 @@ void Manager::Shutdown(void)
 
 	delete tcw;
 	delwin(win);
+
+	printf("\033[?1003l\n");  // Configure the terminal to stop reporting mouse movements
 
 	endwin();
 }
@@ -761,15 +772,122 @@ void Manager::ProcessMessages(void)
 		
 		if (key == KEY_MOUSE) {
 			MEVENT event;
-			if (getmouse(&event) == OK) {
+			if (getmouse(&event) != OK) {
+				log(LL_WARNING, "Error in getmouse()");
+			}
+			else {
 				
 				Window* window = WindowAt(event.y, event.x);
 				if (window == NULL) continue;
 				
 				
-				// Raise the window
+				// Update the mouse button states
 				
-				if (!window->Active()) {
+				// NCurses 6:
+				// Curses does not seem to handle other buttons as well.
+				// Notably, we dont't always get release events especially
+				// when multiple buttons are pressed, and we also don't get
+				// release events for the mouse wheel (buttons 4 and 5).
+				// However, it seems like we are getting 0x10000000 for drags
+				// (REPORT_MOUSE_POSITION)....
+				
+				// NCurses 5:
+				// We don't have button 5. It seems like dragging button 1
+				// sends events for button 4, which doesn't make any sense.
+				// Mouse release events are very unreliable.
+				
+				bool previousMouseButtonStates[APE_NUM_MOUSE_BUTTONS];
+				for (int i = 0; i < APE_NUM_MOUSE_BUTTONS; i++) {
+					previousMouseButtonStates[i] = mouseButtonStates[i];
+#ifndef BUTTON5_PRESSED
+					if (i >= 4) continue;	// Mouse wheel handling problems
+#endif
+					if ((event.bstate & NCURSES_MOUSE_MASK(i + 1,
+						NCURSES_BUTTON_PRESSED)) != 0) mouseButtonStates[i] = true;
+					if ((event.bstate & NCURSES_MOUSE_MASK(i + 1,
+						NCURSES_BUTTON_RELEASED)) != 0) mouseButtonStates[i] = false;
+				}
+				
+				if (mouseButtonStates[0]) {
+					mouseButtonStates[3] = false;
+					mouseButtonStates[4] = false;
+					if ((event.bstate & BUTTON4_RELEASED) != 0) {
+						mouseButtonStates[0] = false;
+					}
+				}
+				
+				if (lastMouseX == event.x && lastMouseY == event.y
+				 && (event.bstate & REPORT_MOUSE_POSITION) != 0) {
+					// This is a release event in ncurses 5
+					for (int i = 0; i < APE_NUM_MOUSE_BUTTONS; i++) {
+						mouseButtonStates[i] = false;
+					}
+				}
+				
+#ifndef BUTTON5_PRESSED
+				// TODO Figure out how to handle the middle button clicks
+				if (lastMouseX == event.x && lastMouseY == event.y
+				 && (event.bstate & REPORT_MOUSE_POSITION) != 0
+				 && (lastEffectiveMouseState & BUTTON2_PRESSED) != 0) {
+					// This is in fact a mouse wheel event in ncurses 5. Why?!
+					mouseButtonStates[4] = true;
+				}
+				
+				if ((event.bstate & BUTTON2_PRESSED) != 0) {
+					// This is in fact a mouse wheel event in ncurses 5. Why?!
+					mouseButtonStates[1] = false;
+					mouseButtonStates[4] = true;
+				}
+#endif
+				
+				bool buttonPressed = false;
+				bool buttonReleased = false;
+				for (int i = 0; i < APE_NUM_MOUSE_BUTTONS; i++) {
+					if (mouseButtonStates[i] != previousMouseButtonStates[i]) {
+						if (mouseButtonStates[i]) {
+							buttonPressed = true;
+						}
+						else {
+							buttonReleased = true;
+						}
+					}
+				}
+				
+				if (buttonReleased && !buttonPressed) {
+					// We may not get release events for all buttons, so let's
+					// proactively turn them off.
+					for (int i = 0; i < APE_NUM_MOUSE_BUTTONS; i++) {
+						mouseButtonStates[i] = false;
+					}
+				}
+				
+				lastMouseX = event.x;
+				lastMouseY = event.y;
+				lastMouseState = event.bstate;
+				lastEffectiveMouseState = event.bstate;
+				
+#ifndef BUTTON5_PRESSED
+				if (mouseButtonStates[4]) {
+					lastEffectiveMouseState |= BUTTON2_PRESSED;
+				}
+#endif
+
+				/*log(LL_DEBUG, "Mouse %10x %x %x: %x %x %x %x %x : %d %d %d",
+				event.bstate, BUTTON_SHIFT, REPORT_MOUSE_POSITION,
+				mouseButtonStates[0], mouseButtonStates[1],
+				mouseButtonStates[2], mouseButtonStates[3], mouseButtonStates[4],
+				event.x, event.y, event.z);*/
+				
+				
+				// Determine clicks and further parse/sanitize the event
+				
+				// TODO
+				
+				
+				// Raise the window on button activity
+				
+				if ((event.bstate & REPORT_MOUSE_POSITION) == 0 && !buttonPressed
+					&& !window->Active()) {
 					if (!window->Menu()) CloseMenus();
 					if (window != windowSwitcher && windowSwitcher != NULL) {
 						windowSwitcher->Close();
@@ -783,6 +901,12 @@ void Manager::ProcessMessages(void)
 				
 				window->OnMouseEvent(event.y - window->Row(),
 					event.x - window->Column(), event.bstate);
+				
+				
+				// Clear the mouse wheel events
+				
+				mouseButtonStates[3] = false;
+				mouseButtonStates[4] = false;
 			}
 		}
 

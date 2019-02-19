@@ -145,7 +145,7 @@ protected:
 	virtual void OnKeyPressed(int key);
 	
 	/**
-	 * An event handler for a mouse event
+	 * A generic event handler for all types of mouse events
 	 *
 	 * @param row the row
 	 * @param column the column

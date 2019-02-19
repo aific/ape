@@ -880,20 +880,40 @@ void Editor::UpdateCursor(void)
  *
  * @param newRow the new row
  * @param newCol the new column
+ * @param shift whether the Shift button was held
  */
-void Editor::MoveDocumentCursor(int newRow, int newCol)
+void Editor::MoveDocumentCursor(int newRow, int newCol, bool shift)
 {
+	bool needsPaint = EnsureValidScroll();
+
+	
+	// Selection logic
+	
+	if (shift && !selection) {
+		selRow = row;
+		selCol = actualCol;
+		selection = true;
+	}
+	
+	if (!shift && selection) {
+		selection = false;
+		needsPaint = true;
+	}
+	
+	if (selection) needsPaint = true;
+	
+	
+	// Cursor movement and scrolling logic
+	
 	row = newRow;
 	if (row >= doc->NumLines()) row = doc->NumLines() - 1;
 	if (row < 0) row = 0;
 
 	col = newCol;
 	int len = doc->DisplayLength(row);
-	if (col > len) col = len - 1;
+	if (col >= len) col = len;
 	if (col < 0) col = 0;
 
-	bool needsPaint = EnsureValidScroll();
-	
 	UpdateActualCursorPosition();
 	if (needsPaint) Paint();
 	UpdateCursor();
@@ -2212,8 +2232,11 @@ void Editor::OnMouseEvent(int row, int column, mmask_t buttonState)
 {
 	if (doc == NULL) return;
 	
-	doc->FinalizeEditAction();
-	MoveDocumentCursor(doc->PageStart() + row, colStart + column);
+	if ((buttonState & BUTTON1_PRESSED) != 0) {
+		doc->FinalizeEditAction();
+		MoveDocumentCursor(doc->PageStart() + row, colStart + column,
+			(buttonState & BUTTON_SHIFT) != 0);
+	}
 }
 
 
@@ -2335,14 +2358,3 @@ bool Editor::FindNext(bool forward, bool keepIfOnMatch, bool wrap)
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
