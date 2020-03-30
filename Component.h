@@ -118,6 +118,11 @@ protected:
 	virtual void MoveCursor(int r, int c);
 
 	/**
+	 * Hide the cursor
+	 */
+	virtual void HideCursor(void);
+
+	/**
 	 * Focus the next component
 	 */
 	virtual void FocusNext(void);
@@ -152,6 +157,15 @@ protected:
 	 * @param buttonState the button state bits
 	 */
 	virtual void OnMouseEvent(int row, int column, mmask_t buttonState);
+	
+	/**
+	 * An event handler for mouse wheel
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param wheel the wheel direction
+	 */
+	virtual void OnMouseWheel(int row, int column, int wheel) {};
 
 	/**
 	 * An event handler for moving the component

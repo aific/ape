@@ -284,6 +284,19 @@ void Component::MoveCursor(int r, int c)
 
 
 /**
+ * Hide the cursor
+ */
+void Component::HideCursor(void)
+{
+	cursVisible = false;
+
+	if (Active()) {
+		curs_set(FALSE);
+	}
+}
+
+
+/**
  * A notification handler for gaining focus
  */
 void Component::NotifyActive(void)

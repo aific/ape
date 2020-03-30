@@ -180,8 +180,10 @@ class Editor : public Component
 	
 	/**
 	 * Update the cursor location and refresh
+	 *
+	 * @param scroll whether to scroll to make the cursor visible
 	 */
-	void UpdateCursor(void);
+	void UpdateCursor(bool scroll = true);
 	
 	/**
 	 * Insert a character at the cursor position
@@ -272,6 +274,15 @@ protected:
 	 * @param buttonState the button state bits
 	 */
 	virtual void OnMouseEvent(int row, int column, mmask_t buttonState);
+	
+	/**
+	 * An event handler for mouse wheel
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param wheel the wheel direction
+	 */
+	virtual void OnMouseWheel(int row, int column, int wheel);
 
 	/**
 	 * An event handler for resizing the component

@@ -134,6 +134,15 @@ protected:
 	 * @param buttonState the button state bits
 	 */
 	virtual void OnMouseEvent(int row, int column, mmask_t buttonState);
+	
+	/**
+	 * An event handler for mouse wheel
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param wheel the wheel direction
+	 */
+	virtual void OnMouseWheel(int row, int column, int wheel);
 
 	/**
 	 * An event handler for moving the component
@@ -285,6 +294,15 @@ public:
 	 * @return the active top-level component, or NULL if none is active
 	 */
 	Component* ActiveTopLevelComponent(void);
+	
+	/**
+	 * Return the component at the given coordinate
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @return the component, or NULL if none
+	 */
+	Component* ComponentAt(int row, int column);
 
 	/**
 	 * Return true if this container captures focus (i.e., calling FocusNext()

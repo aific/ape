@@ -380,18 +380,32 @@ void Container::OnKeyPressed(int key)
  */
 void Container::OnMouseEvent(int row, int column, mmask_t buttonState)
 {
-	for (int i = ((int) components.size()) - 1; i >= 0; i--) {
-		if (!components[i]->Visible()) continue;
-		if (!components[i]->Contains(row - ClientRow(), column - ClientColumn())) continue;
-		
-		if (components[i]->CanReceiveFocus()) {
-			components[i]->Focus();
-		}
-		
-		components[i]->OnMouseEvent(row - components[i]->Row() - ClientRow(),
-			column - components[i]->Column() - ClientColumn(), buttonState);
-		return;
+	Component* component = ComponentAt(row, column);
+	if (component == NULL) return;
+	
+	if (component->CanReceiveFocus()) {
+		component->Focus();
 	}
+	
+	component->OnMouseEvent(row - component->Row() - ClientRow(),
+		column - component->Column() - ClientColumn(), buttonState);
+}
+
+
+/**
+ * An event handler for mouse wheel
+ *
+ * @param row the row
+ * @param column the column
+ * @param wheel the wheel direction
+ */
+void Container::OnMouseWheel(int row, int column, int wheel)
+{
+	Component* component = ComponentAt(row, column);
+	if (component == NULL) return;
+	
+	component->OnMouseWheel(row - component->Row() - ClientRow(),
+		column - component->Column() - ClientColumn(), wheel);
 }
 
 
@@ -490,6 +504,24 @@ Component* Container::ActiveTopLevelComponent(void)
 		return ((Container*) c)->ActiveTopLevelComponent();
 	else
 		return c;
+}
+
+
+/**
+ * Return the component at the given coordinate
+ *
+ * @param row the row
+ * @param column the column
+ * @return the component, or NULL if none
+ */
+Component* Container::ComponentAt(int row, int column)
+{
+	for (int i = ((int) components.size()) - 1; i >= 0; i--) {
+		if (!components[i]->Visible()) continue;
+		if (!components[i]->Contains(row - ClientRow(), column - ClientColumn())) continue;
+		return components[i];
+	}
+	return NULL;
 }
 
 

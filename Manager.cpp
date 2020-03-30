@@ -886,7 +886,8 @@ void Manager::ProcessMessages(void)
 				
 				// Raise the window on button activity
 				
-				if ((event.bstate & REPORT_MOUSE_POSITION) == 0 && !buttonPressed
+				if ((event.bstate & REPORT_MOUSE_POSITION) == 0
+					&& (mouseButtonStates[0] || mouseButtonStates[1] || mouseButtonStates[2])
 					&& !window->Active()) {
 					if (!window->Menu()) CloseMenus();
 					if (window != windowSwitcher && windowSwitcher != NULL) {
@@ -899,8 +900,17 @@ void Manager::ProcessMessages(void)
 				
 				// Pass event to the window (click-through)
 				
-				window->OnMouseEvent(event.y - window->Row(),
-					event.x - window->Column(), event.bstate);
+				int row = event.y - window->Row();
+				int column = event.x - window->Column();
+				
+				if (mouseButtonStates[0] || mouseButtonStates[1] || mouseButtonStates[2]) {
+					window->OnMouseEvent(row, column, event.bstate);
+				}
+				
+				if (mouseButtonStates[3] || mouseButtonStates[4]) {
+					int wheel = mouseButtonStates[3] ? -1 : 1;
+					window->OnMouseWheel(row, column, wheel);
+				}
 				
 				
 				// Clear the mouse wheel events

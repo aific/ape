@@ -767,15 +767,20 @@ void Editor::UpdateActualCursorPosition(void)
 
 /**
  * Update the cursor location and refresh
+ *
+ * @param scroll whether to scroll to make the cursor visible
  */
-void Editor::UpdateCursor(void)
+void Editor::UpdateCursor(bool scroll)
 {
 	// Scroll, if necessary
+
+	if (scroll) {
 	
-	if (row < doc->PageStart()) doc->SetPageStart(row);
+		if (row < doc->PageStart()) doc->SetPageStart(row);
 	
-	if (row - doc->PageStart() >= Rows() - 1) {
-		doc->SetPageStart(row - Rows() + 1);
+		if (row - doc->PageStart() >= Rows() - 1) {
+			doc->SetPageStart(row - Rows() + 1);
+		}
 	}
 	
 	
@@ -784,65 +789,35 @@ void Editor::UpdateCursor(void)
 	int nr = row - doc->PageStart();
 	int nc = col - colStart;
 	
-	assert(nr >= 0 && nr <= Rows());
-	assert(row >= doc->PageStart());
-	assert(row < doc->NumLines() || doc->NumLines() == 0);
-	assert(row < doc->PageStart() + Rows());
-	
-	int pos = 0;
-	int length = Columns();
-	const char* p = doc->Line(row);
-	bool lastWasTab = false;
-	int preTabPos = 0;
-	offsetWithinLine = 0;
-	
-	while (*p != '\0' && *p != '\n' && *p != '\r' && pos < col) {
-		char c = *p;
-		
-		if (c == '\t') {
-			lastWasTab = true;
-			preTabPos = pos;
-			pos = (pos / tabSize) * tabSize + tabSize;
-		}
-		else {
-			lastWasTab = false;
-			pos++;
-		}
-
-		p++;
-		offsetWithinLine++;
+	if (scroll) {
+		assert(nr >= 0 && nr <= Rows());
+		assert(row >= doc->PageStart());
+		assert(row < doc->NumLines() || doc->NumLines() == 0);
+		assert(row < doc->PageStart() + Rows());
 	}
 	
-	if (lastWasTab && pos > col) {
-		pos = preTabPos;
-		offsetWithinLine--;
-	}
-
-	actualCol = pos;
-	
-	
-	// Deselect, if necessary
-	
-	if (selection && selRow == row && selCol == actualCol) selection = false;
+	UpdateActualCursorPosition();
 	
 	
 	// Scroll to the left, if necessary
 	
-	if (actualCol < colStart) {
-		colStart = actualCol;
-		Paint();
-	}
+	if (scroll) {
+		if (actualCol < colStart) {
+			colStart = actualCol;
+			Paint();
+		}
 	
-	if (1 + pos - colStart > Columns() - 1) {
-		colStart = 1 + pos - Columns();
-		Paint();
+		if (1 + actualCol - colStart > Columns() - 1) {
+			colStart = 1 + actualCol - Columns();
+			Paint();
+		}
 	}
 	
 	
 	// Compute the new column
 	
 	nc = actualCol - colStart;
-	assert(nc >= 0 && nc <= Columns());
+	assert(!scroll || (nc >= 0 && nc <= Columns()));
 	
 	
 	// Update the scroll bars
@@ -867,7 +842,13 @@ void Editor::UpdateCursor(void)
 	
 	// Update the screen
 	
-	MoveCursor(nr, nc);
+	if (nr >= 0 && nr < Rows() && nc >= 0 && nc < Columns()) {
+		MoveCursor(nr, nc);
+	}
+	else {
+		HideCursor();
+	}
+	
 	doc->SetCursorLocation(row, actualCol);
 	
 	// If we are inside EditorWindow, PaintEditorStatus() needs to be called
@@ -884,7 +865,7 @@ void Editor::UpdateCursor(void)
  */
 void Editor::MoveDocumentCursor(int newRow, int newCol, bool shift)
 {
-	bool needsPaint = EnsureValidScroll();
+	bool needsPaint = false;
 
 	
 	// Selection logic
@@ -913,6 +894,9 @@ void Editor::MoveDocumentCursor(int newRow, int newCol, bool shift)
 	int len = doc->DisplayLength(row);
 	if (col >= len) col = len;
 	if (col < 0) col = 0;
+	
+	
+	if (EnsureValidScroll()) needsPaint = true;
 
 	UpdateActualCursorPosition();
 	if (needsPaint) Paint();
@@ -2237,6 +2221,37 @@ void Editor::OnMouseEvent(int row, int column, mmask_t buttonState)
 		MoveDocumentCursor(doc->PageStart() + row, colStart + column,
 			(buttonState & BUTTON_SHIFT) != 0);
 	}
+}
+
+
+/**
+ * An event handler for mouse wheel
+ *
+ * @param row the row
+ * @param column the column
+ * @param wheel the wheel direction
+ */
+void Editor::OnMouseWheel(int row, int column, int wheel)
+{
+	if (doc == NULL) return;
+	bool needsPaint = false;
+	
+	if (wheel < 0) {
+		if (doc->PageStart() > 0) {
+			doc->SetPageStart(doc->PageStart() - 1);
+			needsPaint = true;
+		}
+	}
+	
+	if (wheel > 0) {
+		if (doc->NumLines() - doc->PageStart() > Rows()) {
+			doc->SetPageStart(doc->PageStart() + 1);
+			needsPaint = true;
+		}
+	}
+	
+	if (needsPaint) Paint();
+	UpdateCursor(false /* scroll */);
 }
 
 
