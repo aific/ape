@@ -1279,6 +1279,8 @@ void Editor::MoveCursorEndWord(bool shift)
 				idx = doc->StringPosition(row, col);
 			}
 		}
+		
+		col++;
 	}
 	
 	if (col - colStart > Columns() - 1) {
