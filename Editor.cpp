@@ -260,6 +260,8 @@ Editor::Editor(Container* parent, bool _multiline, int _row, int _col, int rows,
 	tabSize = 4;
 	displayTabs = true;
 	
+	wheelSpeed = 3;
+	
 	overwriteMode = false;
 	scrollBarsReflectCursor = false;
 	
@@ -2265,14 +2267,21 @@ void Editor::OnMouseWheel(int row, int column, int wheel)
 	
 	if (wheel < 0) {
 		if (doc->PageStart() > 0) {
-			doc->SetPageStart(doc->PageStart() - 1);
+			int n = doc->PageStart() - wheelSpeed;
+			if (n < 0) n = 0;
+			doc->SetPageStart(n);
 			needsPaint = true;
 		}
 	}
 	
 	if (wheel > 0) {
 		if (doc->NumLines() - doc->PageStart() > Rows()) {
-			doc->SetPageStart(doc->PageStart() + 1);
+			int n = doc->PageStart() + wheelSpeed;
+			if (doc->NumLines() - n <= Rows()) {
+				n = doc->NumLines() - Rows();
+				if (n < 0) n = 0;
+			}
+			doc->SetPageStart(n);
 			needsPaint = true;
 		}
 	}

@@ -931,6 +931,9 @@ void Manager::ProcessMessages(void)
 				
 				// Pass event to the window (click-through)
 				
+				// TODO Handle release and drag within the original window (which
+				// also means that the coordinates could end up being outside!)
+				
 				for (int i = 0; i < 3; i++) {
 					if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {
 						window->OnMousePress(row, column, i, shift);

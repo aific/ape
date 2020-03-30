@@ -73,6 +73,7 @@ class Editor : public Component
 	int col;
 	int actualCol;
 	int offsetWithinLine;
+	int wheelSpeed;
 	
 	int selRow;
 	int selCol;
