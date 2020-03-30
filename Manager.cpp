@@ -933,7 +933,7 @@ void Manager::ProcessMessages(void)
 
 			if (key == KEY_CTRL('q')) std::exit(0);
 
-			if (key == KEY_F(2)) {
+			if (key == KEY_F(2) || key == KEY_CTRL('w')) {
 				Window* w = Top();
 				if (w != NULL && w->Regular()) {
 					if (windowSwitcher == NULL) {
