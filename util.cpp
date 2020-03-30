@@ -66,7 +66,20 @@ double EndTimer(void)
 	gettimeofday(&tend, NULL);
 	getrusage(RUSAGE_SELF, &rend);
 	
-	return std::fabs(seconds(&tend) - seconds(&tstart));
+	return std::fabs(seconds(tend) - seconds(tstart));
+}
+
+
+/**
+ * Get the current time in seconds
+ * 
+ * @return the number of seconds
+ */
+double Time(void)
+{
+	static struct timeval t;
+	gettimeofday(&t, NULL);
+	return seconds(t);
 }
 
 
@@ -76,9 +89,9 @@ double EndTimer(void)
  * @param tim the time value
  * @return the number of seconds
  */
-double seconds(struct timeval* tim)
+double seconds(struct timeval& tim)
 {
-	return (double)tim->tv_sec + (double)tim->tv_usec / 1000000.0;
+	return (double)tim.tv_sec + (double)tim.tv_usec / 1000000.0;
 }
 
 

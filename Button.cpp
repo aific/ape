@@ -144,3 +144,18 @@ void Button::OnKeyPressed(int key)
 	Component::OnKeyPressed(key);
 }
 
+
+/**
+ * An event handler for mouse click
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Button::OnMouseClick(int row, int column, int button, bool shift)
+{
+	if (button == 0 && !shift) {
+		FireOnAction();
+	}
+}

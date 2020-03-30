@@ -284,7 +284,7 @@ void EditorWindow::OnAction(Component* sender)
 
 	else if (sender == searchNextButton) {
 		if (editor->HighlightPattern() != NULL) {
-			editor->FindNext(false, false);
+			editor->FindNext(true, false);
 		}
 	}
 

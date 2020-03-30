@@ -54,6 +54,7 @@ Container::Container(Container* _parent, int _row, int _col,
 	: Component(_parent, false, _row, _col, _rows, _cols, _anchor)
 {
 	activeComponent = 0;
+	canHandleMultiClicks = true;
 
 
 	// Set the defaults
@@ -372,13 +373,14 @@ void Container::OnKeyPressed(int key)
 
 
 /**
- * An event handler for a mouse event
+ * An event handler for mouse press
  *
  * @param row the row
  * @param column the column
- * @param buttonState the button state bits
+ * @param button the button
+ * @param shift whether shift was pressed
  */
-void Container::OnMouseEvent(int row, int column, mmask_t buttonState)
+void Container::OnMousePress(int row, int column, int button, bool shift)
 {
 	Component* component = ComponentAt(row, column);
 	if (component == NULL) return;
@@ -387,8 +389,119 @@ void Container::OnMouseEvent(int row, int column, mmask_t buttonState)
 		component->Focus();
 	}
 	
-	component->OnMouseEvent(row - component->Row() - ClientRow(),
-		column - component->Column() - ClientColumn(), buttonState);
+	component->OnMousePress(row - component->Row() - ClientRow(),
+		column - component->Column() - ClientColumn(), button, shift);
+}
+
+
+/**
+ * An event handler for mouse release
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Container::OnMouseRelease(int row, int column, int button, bool shift)
+{
+	Component* component = ComponentAt(row, column);
+	if (component == NULL) return;
+	
+	if (component->CanReceiveFocus()) {
+		component->Focus();
+	}
+	
+	component->OnMouseRelease(row - component->Row() - ClientRow(),
+		column - component->Column() - ClientColumn(), button, shift);
+}
+
+
+/**
+ * An event handler for mouse click
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Container::OnMouseClick(int row, int column, int button, bool shift)
+{
+	Component* component = ComponentAt(row, column);
+	if (component == NULL) return;
+	
+	if (component->CanReceiveFocus()) {
+		component->Focus();
+	}
+	
+	component->OnMouseClick(row - component->Row() - ClientRow(),
+		column - component->Column() - ClientColumn(), button, shift);
+}
+
+
+/**
+ * An event handler for mouse double-click
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Container::OnMouseDoubleClick(int row, int column, int button, bool shift)
+{
+	Component* component = ComponentAt(row, column);
+	if (component == NULL) return;
+	
+	if (component->CanReceiveFocus()) {
+		component->Focus();
+	}
+	
+	component->OnMouseDoubleClick(row - component->Row() - ClientRow(),
+		column - component->Column() - ClientColumn(), button, shift);
+}
+
+
+/**
+ * An event handler for mouse triple-click and beyond
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param count the number of clicks
+ * @param shift whether shift was pressed
+ */
+void Container::OnMouseMultipleClick(int row, int column, int button, int count, bool shift)
+{
+	Component* component = ComponentAt(row, column);
+	if (component == NULL) return;
+	
+	if (component->CanReceiveFocus()) {
+		component->Focus();
+	}
+	
+	component->OnMouseMultipleClick(row - component->Row() - ClientRow(),
+		column - component->Column() - ClientColumn(), button, count, shift);
+}
+
+
+/**
+ * An event handler for mouse drag
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Container::OnMouseDrag(int row, int column, int button, bool shift)
+{
+	Component* component = ComponentAt(row, column);
+	if (component == NULL) return;
+	
+	if (component->CanReceiveFocus()) {
+		component->Focus();
+	}
+	
+	component->OnMouseDrag(row - component->Row() - ClientRow(),
+		column - component->Column() - ClientColumn(), button, shift);
 }
 
 

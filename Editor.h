@@ -267,13 +267,24 @@ protected:
 	virtual void OnKeyPressed(int key);
 	
 	/**
-	 * An event handler for a mouse event
+	 * An event handler for mouse press
 	 *
 	 * @param row the row
 	 * @param column the column
-	 * @param buttonState the button state bits
+	 * @param button the button
+	 * @param shift whether shift was pressed
 	 */
-	virtual void OnMouseEvent(int row, int column, mmask_t buttonState);
+	virtual void OnMousePress(int row, int column, int button, bool shift);
+	
+	/**
+	 * An event handler for mouse drag
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseDrag(int row, int column, int button, bool shift);
 	
 	/**
 	 * An event handler for mouse wheel

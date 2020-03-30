@@ -57,6 +57,7 @@ Editor::Editor(Container* parent, bool _multiline, int _row, int _col, int rows,
 {
 
 	multiline = _multiline;
+	canHandleMultiClicks = true;
 
 
 	// Create an empty document
@@ -737,6 +738,7 @@ void Editor::UpdateActualCursorPosition(void)
 	const char* p = doc->Line(row);
 	bool lastWasTab = false;
 	int preTabPos = 0;
+	offsetWithinLine = 0;
 	
 	while (*p != '\0' && *p != '\n' && *p != '\r' && pos < col) {
 		char c = *p;
@@ -745,16 +747,20 @@ void Editor::UpdateActualCursorPosition(void)
 			lastWasTab = true;
 			preTabPos = pos;
 			pos = (pos / tabSize) * tabSize + tabSize;
-			p++;
 		}
 		else {
 			lastWasTab = false;
 			pos++;
-			p++;
 		}
+		
+		p++;
+		offsetWithinLine++;
 	}
 	
-	if (lastWasTab && pos > col) pos = preTabPos;
+	if (lastWasTab && pos > col) {
+		pos = preTabPos;
+		offsetWithinLine--;
+	}
 	
 	actualCol = pos;
 	
@@ -2208,20 +2214,39 @@ void Editor::OnKeyPressed(int key)
 
 
 /**
- * An event handler for a mouse event
+ * An event handler for mouse press
  *
  * @param row the row
  * @param column the column
- * @param buttonState the button state bits
+ * @param button the button
+ * @param shift whether shift was pressed
  */
-void Editor::OnMouseEvent(int row, int column, mmask_t buttonState)
+void Editor::OnMousePress(int row, int column, int button, bool shift)
 {
 	if (doc == NULL) return;
 	
-	if ((buttonState & BUTTON1_PRESSED) != 0) {
+	if (button == 0) {
 		doc->FinalizeEditAction();
-		MoveDocumentCursor(doc->PageStart() + row, colStart + column,
-			(buttonState & BUTTON_SHIFT) != 0);
+		MoveDocumentCursor(doc->PageStart() + row, colStart + column, shift);
+	}
+}
+
+
+/**
+ * An event handler for mouse drag
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Editor::OnMouseDrag(int row, int column, int button, bool shift)
+{
+	if (doc == NULL) return;
+	
+	if (button == 0) {
+		doc->FinalizeEditAction();
+		MoveDocumentCursor(doc->PageStart() + row, colStart + column, true);
 	}
 }
 

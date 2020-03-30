@@ -79,6 +79,8 @@ Manager::Manager(void)
 	lastMouseY = -1;
 	lastMouseState = 0;
 	lastEffectiveMouseState = 0;
+	
+	bzero(mousePressInfo, sizeof(mousePressInfo));
 }
 
 
@@ -861,6 +863,8 @@ void Manager::ProcessMessages(void)
 					}
 				}
 				
+				bool mouseMoved = lastMouseX != event.x || lastMouseY != event.y;
+				
 				lastMouseX = event.x;
 				lastMouseY = event.y;
 				lastMouseState = event.bstate;
@@ -879,15 +883,12 @@ void Manager::ProcessMessages(void)
 				event.x, event.y, event.z);*/
 				
 				
-				// Determine clicks and further parse/sanitize the event
-				
-				// TODO
-				
-				
 				// Raise the window on button activity
 				
 				if ((event.bstate & REPORT_MOUSE_POSITION) == 0
-					&& (mouseButtonStates[0] || mouseButtonStates[1] || mouseButtonStates[2])
+					&& ((mouseButtonStates[0] && !previousMouseButtonStates[0])
+					 || (mouseButtonStates[1] && !previousMouseButtonStates[1])
+					 || (mouseButtonStates[2] && !previousMouseButtonStates[2]))
 					&& !window->Active()) {
 					if (!window->Menu()) CloseMenus();
 					if (window != windowSwitcher && windowSwitcher != NULL) {
@@ -898,13 +899,81 @@ void Manager::ProcessMessages(void)
 				}
 				
 				
-				// Pass event to the window (click-through)
+				// Record the press
 				
 				int row = event.y - window->Row();
 				int column = event.x - window->Column();
+				bool shift = (event.bstate & BUTTON_SHIFT) != 0;
+				double time = Time();
+				bool move = (event.bstate & REPORT_MOUSE_POSITION) == 0 && mouseMoved;
 				
-				if (mouseButtonStates[0] || mouseButtonStates[1] || mouseButtonStates[2]) {
-					window->OnMouseEvent(row, column, event.bstate);
+				for (int i = 0; i < 3; i++) {
+					if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {
+						if (mousePressInfo[i].active
+						 && mousePressInfo[i].window == window
+						 && mousePressInfo[i].row == row
+						 && mousePressInfo[i].column == column
+						 && time - mousePressInfo[i].time < 0.5) {
+							mousePressInfo[i].time = time;
+						}
+						else {
+							mousePressInfo[i].active = true;
+							mousePressInfo[i].shift = shift;
+							mousePressInfo[i].row = row;
+							mousePressInfo[i].column = column;
+							mousePressInfo[i].window = window;
+							mousePressInfo[i].time = time;
+							mousePressInfo[i].clicks = 0;
+						}
+					}
+				}
+				
+				
+				// Pass event to the window (click-through)
+				
+				for (int i = 0; i < 3; i++) {
+					if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {
+						window->OnMousePress(row, column, i, shift);
+					}
+				}
+				
+				for (int i = 0; i < 3; i++) {
+					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
+						window->OnMouseRelease(row, column, i, shift);
+					}
+				}
+				
+				for (int i = 0; i < 3; i++) {
+					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
+						if (mousePressInfo[i].active
+						 && mousePressInfo[i].window == window
+						 && mousePressInfo[i].row == row
+						 && mousePressInfo[i].column == column
+						 && time - mousePressInfo[i].time < 0.5) {
+						 	mousePressInfo[i].clicks++;
+						 	if (mousePressInfo[i].clicks == 1) {
+								window->OnMouseClick(row, column, i, shift);
+							}
+							else if (mousePressInfo[i].clicks == 2) {
+								window->OnMouseDoubleClick(row, column, i, shift);
+							}
+							else {
+								window->OnMouseMultipleClick(row, column, i,
+									mousePressInfo[i].clicks, shift);
+							}
+							mousePressInfo[i].time = time;
+						}
+					}
+				}
+				
+				for (int i = 0; i < 3; i++) {
+					if (mouseButtonStates[i] && previousMouseButtonStates[i]) {
+						if (mousePressInfo[i].active
+						 && mousePressInfo[i].window == window
+						 && move) {
+							window->OnMouseDrag(row, column, i, shift);
+						}
+					}
 				}
 				
 				if (mouseButtonStates[3] || mouseButtonStates[4]) {

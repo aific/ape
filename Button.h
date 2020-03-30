@@ -58,6 +58,16 @@ protected:
 	 * @param key the key code
 	 */
 	virtual void OnKeyPressed(int key);
+	
+	/**
+	 * An event handler for mouse click
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseClick(int row, int column, int button, bool shift);
 
 
 public:

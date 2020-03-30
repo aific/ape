@@ -125,16 +125,68 @@ protected:
 	 * @param key the key code
 	 */
 	virtual void OnKeyPressed(int key);
-
+	
 	/**
-	 * An event handler for a mouse event
+	 * An event handler for mouse press
 	 *
 	 * @param row the row
 	 * @param column the column
-	 * @param buttonState the button state bits
+	 * @param button the button
+	 * @param shift whether shift was pressed
 	 */
-	virtual void OnMouseEvent(int row, int column, mmask_t buttonState);
+	virtual void OnMousePress(int row, int column, int button, bool shift);
 	
+	/**
+	 * An event handler for mouse release
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseRelease(int row, int column, int button, bool shift);
+	
+	/**
+	 * An event handler for mouse click
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseClick(int row, int column, int button, bool shift);
+	
+	/**
+	 * An event handler for mouse double-click
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseDoubleClick(int row, int column, int button, bool shift);
+	
+	/**
+	 * An event handler for mouse triple-click and beyond
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param count the number of clicks
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseMultipleClick(int row, int column, int button, int count, bool shift);
+	
+	/**
+	 * An event handler for mouse drag
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseDrag(int row, int column, int button, bool shift);
+
 	/**
 	 * An event handler for mouse wheel
 	 *

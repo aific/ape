@@ -186,12 +186,19 @@ void StartTimer(void);
 double EndTimer(void);
 
 /**
+ * Get the current time in seconds
+ * 
+ * @return the number of seconds
+ */
+double Time(void);
+
+/**
  * Convert timeval to seconds
  * 
  * @param tim the time value
  * @return the number of seconds
  */
-double seconds(struct timeval* tim);
+double seconds(struct timeval& tim);
 
 /**
  * Compute the number of digits of a number

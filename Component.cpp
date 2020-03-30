@@ -58,6 +58,7 @@ Component::Component(Container* _parent, bool _focusable, int _row, int _col,
 
 	parent = _parent;
 	canReceiveFocus = _focusable;
+	canHandleMultiClicks = false;
 
 	row = _row;
 	col = _col;
@@ -422,14 +423,35 @@ void Component::OnKeyPressed(int key)
 
 
 /**
- * A generic event handler for all types of mouse events
+ * An event handler for mouse double-click
  *
  * @param row the row
  * @param column the column
- * @param buttonState the button state bits
+ * @param button the button
+ * @param shift whether shift was pressed
  */
-void Component::OnMouseEvent(int row, int column, mmask_t buttonState)
+void Component::OnMouseDoubleClick(int row, int column, int button, bool shift)
 {
+	if (!canHandleMultiClicks) {
+		OnMouseClick(row, column, button, shift);
+	}
+}
+
+
+/**
+ * An event handler for mouse triple-click and beyond
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param count the number of clicks
+ * @param shift whether shift was pressed
+ */
+void Component::OnMouseMultipleClick(int row, int column, int button, int count, bool shift)
+{
+	if (!canHandleMultiClicks) {
+		OnMouseClick(row, column, button, shift);
+	}
 }
 
 

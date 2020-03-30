@@ -73,6 +73,16 @@ class Manager
 	bool mouseButtonStates[APE_NUM_MOUSE_BUTTONS];
 	int lastMouseX, lastMouseY, lastMouseState;
 	int lastEffectiveMouseState;
+	
+	struct {
+		bool active;
+		bool shift;
+		int row;
+		int column;
+		Window* window;
+		double time;
+		int clicks;
+	} mousePressInfo[APE_NUM_MOUSE_BUTTONS];
 
 
 	/**
