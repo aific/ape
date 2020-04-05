@@ -82,6 +82,7 @@ AbstractList::AbstractList(Container* parent, bool _sorted,
 	cursorFg = 6;
 	selBg = 4;
 	selFg = 7;
+	canHandleMultiClicks = true;
 	
 	
 	// Set the component properties
@@ -636,6 +637,99 @@ void AbstractList::OnKeyPressed(int key)
 	// The default action
 	
 	Component::OnKeyPressed(key);
+}
+
+
+/**
+ * An event handler for mouse press
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void AbstractList::OnMousePress(int row, int column, int button, bool shift)
+{
+	if (button == 0) {
+		int size = Size();
+		int c = pageStart + row;
+		
+		if (shift && !selection) {
+			selStart = cursor;
+			selection = true;
+		}
+		
+		if (!shift && selection) {
+			selection = false;
+		}
+		
+		if (c >= 0 && c < size && c != cursor) {
+			cursor = c;
+			CursorMoved();
+			Paint();
+		}
+	}
+}
+
+
+/**
+ * An event handler for mouse double-click
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void AbstractList::OnMouseDoubleClick(int row, int column, int button, bool shift)
+{
+	// The Manager should have called OnMousePress(), which should have placed
+	// the mouse cursor in the right place already, so we just need to verify
+	// that the click was correct.
+	
+	if (pageStart + row == cursor) FireOnAction();
+}
+
+
+/**
+ * An event handler for mouse drag
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void AbstractList::OnMouseDrag(int row, int column, int button, bool shift)
+{
+	OnMousePress(row, column, button, true);
+}
+
+
+/**
+ * An event handler for mouse wheel
+ *
+ * @param row the row
+ * @param column the column
+ * @param wheel the wheel direction
+ */
+void AbstractList::OnMouseWheel(int row, int column, int wheel)
+{
+	int wheelSpeed = 3;
+
+	if (wheel < 0) {
+		pageStart -= wheelSpeed;
+		if (pageStart < 0) pageStart = 0;
+	}
+	else {
+		pageStart += wheelSpeed;
+		int size = Size();
+		if (pageStart + Rows() > size) {
+			pageStart = size - Rows();
+			if (pageStart < 0) pageStart = 0;
+		}
+	}
+	
+	CursorMoved();
+	Paint();
 }
 
 
