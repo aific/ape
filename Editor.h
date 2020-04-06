@@ -50,6 +50,7 @@ typedef enum {
 	EEAT_TypeWhitespace,
 	EEAT_Delete,
 	EEAT_Backspace,
+	EEAT_Indent,
 	EEAT_Enter,
 	EEAT_Cut
 } EditorEditActionType;
@@ -207,6 +208,16 @@ class Editor : public Component
 	 * Delete a character before the cursor position
 	 */
 	void Backspace(void);
+	
+	/**
+	 * Indent the current line or selection
+	 */
+	void Indent(void);
+	
+	/**
+	 * Unindent the current line or selection
+	 */
+	void Unindent(void);
 	
 	/**
 	 * Copy a string to the clipboard

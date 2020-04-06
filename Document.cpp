@@ -383,7 +383,7 @@ int EditorDocument::StringPosition(int line, int cursor)
 		}
 		
 		p++;
-		index++;
+		if (pos <= cursor) index++;
 	}
 	
 	return index;

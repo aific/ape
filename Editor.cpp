@@ -1690,7 +1690,7 @@ void Editor::DeleteChar(void)
 void Editor::Backspace(void)
 {
 	if (lastAction != EEAT_Backspace) doc->FinalizeEditAction();
-		
+	
 	bool needsPaint = EnsureValidScroll();
 
 	if (selection) {
@@ -1741,6 +1741,91 @@ void Editor::Backspace(void)
 	}
 	
 	lastAction = EEAT_Backspace;
+	AfterEdit();
+}
+
+
+/**
+ * Indent the current line or selection
+ */
+void Editor::Indent(void)
+{
+	if (lastAction != EEAT_Indent) doc->FinalizeEditAction();
+
+	int fromRow = row;
+	int toRow = row;
+	if (selection) {
+		if (selRow < row) {
+			fromRow = selRow;
+		}
+		else {
+			toRow = selRow;
+		}
+	}
+	
+	int idx = doc->StringPosition(row, actualCol);
+	int idxSel = selection ? doc->StringPosition(selRow, selCol) : 0;
+
+	for (int r = fromRow; r <= toRow; r++) {
+		doc->InsertCharToLine(r, '\t', 0);
+	}
+	
+	while (doc->StringPosition(row, col) <= idx) col++;
+	if (selection) {
+		while (doc->StringPosition(selRow, selCol) <= idxSel) selCol++;
+	}
+
+	EnsureValidScroll();
+	Paint();
+	
+	lastAction = EEAT_Indent;
+	AfterEdit();
+}
+
+
+/**
+ * Unindent the current line or selection
+ */
+void Editor::Unindent(void)
+{
+	if (lastAction != EEAT_Indent) doc->FinalizeEditAction();
+
+	int fromRow = row;
+	int toRow = row;
+	if (selection) {
+		if (selRow < row) {
+			fromRow = selRow;
+		}
+		else {
+			toRow = selRow;
+		}
+	}
+	
+	int idx = doc->StringPosition(row, actualCol);
+	int idxSel = selection ? doc->StringPosition(selRow, selCol) : 0;
+	bool updateRow = false;
+	bool updateSel = false;
+
+	for (int r = fromRow; r <= toRow; r++) {
+		const char* l = doc->Line(r);
+		if (*l == '\t') {
+			doc->DeleteCharFromLine(r, 0);
+			if (r == row) updateRow = true;
+			if (r == selRow) updateSel = true;
+		}
+	}
+	
+	if (updateRow) {
+		while (col > 0 && doc->StringPosition(row, col) >= idx) col--;
+	}
+	if (selection && updateSel) {
+		while (selCol > 0 && doc->StringPosition(selRow, selCol) >= idxSel) selCol--;
+	}
+
+	EnsureValidScroll();
+	Paint();
+	
+	lastAction = EEAT_Indent;
 	AfterEdit();
 }
 
@@ -2008,6 +2093,16 @@ void Editor::OnKeyPressed(int key)
 {
 
 	// Text editing
+	
+	if (key == '\t' && selection) {
+		Indent();
+		return;
+	}
+	
+	if (key == KEY_BTAB && selection) {
+		Unindent();
+		return;
+	}
 	
 	if ((key >= 0x20 && key <= 0x7E) || (key == 9 && multiline)) {
 		InsertChar((char) key);
