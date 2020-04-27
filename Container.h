@@ -115,9 +115,19 @@ protected:
 	virtual void FocusFirst(void);
 
 	/**
+	 * Focus the last component
+	 */
+	virtual void FocusLast(void);
+
+	/**
 	 * Focus the next component
 	 */
 	virtual void FocusNext(void);
+
+	/**
+	 * Focus the previous component
+	 */
+	virtual void FocusPrevious(void);
 
 	/**
 	 * An event handler for pressing a key

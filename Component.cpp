@@ -419,6 +419,11 @@ void Component::OnKeyPressed(int key)
 		FocusNext();
 		return;
 	}
+	
+	if (key == KEY_BTAB) {
+		FocusPrevious();
+		return;
+	}
 }
 
 
@@ -618,6 +623,22 @@ void Component::FocusNext(void)
 	// Pass this up to the container
 	
 	if (Parent() != NULL) Parent()->FocusNext();
+}
+
+
+/**
+ * Focus the previous component
+ */
+void Component::FocusPrevious(void)
+{
+	// This component must have focus for this method to make sense
+	
+	if (!canReceiveFocus || !Active()) return;
+
+
+	// Pass this up to the container
+	
+	if (Parent() != NULL) Parent()->FocusPrevious();
 }
 
 

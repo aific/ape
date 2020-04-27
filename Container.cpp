@@ -656,6 +656,23 @@ void Container::FocusFirst(void)
 
 
 /**
+ * Focus the last component
+ */
+void Container::FocusLast(void)
+{
+	for (ssize_t i = components.size() - 1; i >= 0; i--) {
+		if (components[i]->CanReceiveFocus() && components[i]->Visible()) {
+			if (components[i]->InstanceOfContainer())
+				((Container*) components[i])->FocusLast();
+			else
+				components[i]->Focus();
+			break;
+		}
+	}
+}
+
+
+/**
  * Focus the next component
  */
 void Container::FocusNext(void)
@@ -685,6 +702,40 @@ void Container::FocusNext(void)
 	}
 	else {
 		FocusFirst();
+	}
+}
+
+
+/**
+ * Focus the previous component
+ */
+void Container::FocusPrevious(void)
+{
+	// This component must have focus for this method to make sense
+	
+	if (!canReceiveFocus || !Active() || components.empty()) return;
+
+
+	// Attempt to find the previous component that can receive focus
+	
+	for (ssize_t i = ((ssize_t) activeComponent) - 1; i >= 0; i--) {
+		if (components[i]->CanReceiveFocus() && components[i]->Visible()) {
+			if (components[i]->InstanceOfContainer())
+				((Container*) components[i])->FocusLast();
+			else
+				components[i]->Focus();
+			return;
+		}
+	}
+
+
+	// If that fails, go to the parent or back to the beginning if appropriate
+
+	if (Parent() != NULL && !capturesFocus) {
+		Parent()->FocusPrevious();
+	}
+	else {
+		FocusLast();
 	}
 }
 

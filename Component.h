@@ -133,6 +133,11 @@ protected:
 	virtual void FocusNext(void);
 
 	/**
+	 * Focus the previous component
+	 */
+	virtual void FocusPrevious(void);
+
+	/**
 	 * A notification handler for gaining focus
 	 */
 	void NotifyActive(void);
