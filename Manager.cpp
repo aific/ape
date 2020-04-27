@@ -658,8 +658,6 @@ void Manager::ProcessMessages(void)
 	int key;
 	processMessagesDepth++;
 
-	Refresh(); // XXX Do I really have to do this?
-
 	while ((key = getch()) != ERR) {
 
 

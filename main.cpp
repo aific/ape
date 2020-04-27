@@ -168,7 +168,7 @@ int main(int argc, char * const argv[])
 
 	// Main loop
 
-	wm.Paint();
+	while (getch() != ERR);
 	wm.Refresh();
 
 	for (;;) {
