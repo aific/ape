@@ -82,6 +82,7 @@ class Manager
 		Window* window;
 		double time;
 		int clicks;
+		bool drag;
 	} mousePressInfo[APE_NUM_MOUSE_BUTTONS];
 
 

@@ -2349,6 +2349,31 @@ void Editor::OnMouseDrag(int row, int column, int button, bool shift)
 
 
 /**
+ * An event handler for finishing mouse drag
+ *
+ * @param mouseRow the row
+ * @param mouseColumn the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Editor::OnMouseDragFinish(int mouseRow, int mouseColumn, int button, bool shift)
+{
+	if (doc == NULL) return;
+	
+	if (button == 0 && selection) {
+		doc->FinalizeEditAction();
+		
+		// If the selection created by drag ends up with cursor on the right,
+		// move the cursor one character to the right because it is exclusive
+		if (row > selRow || (row == selRow && col > selCol)) {
+			int len = doc->DisplayLength(row);
+			if (col < len) MoveCursorRight(true);
+		}
+	}
+}
+
+
+/**
  * An event handler for mouse wheel
  *
  * @param row the row

@@ -969,11 +969,22 @@ void Manager::ProcessMessages(void)
 				
 				for (int i = 0; i < 3; i++) {
 					if (mouseButtonStates[i] && previousMouseButtonStates[i]) {
+						if (move) {
+							mousePressInfo[i].drag = true;
+						}
 						if (mousePressInfo[i].active
 						 && mousePressInfo[i].window == window
 						 && move) {
 							window->OnMouseDrag(row, column, i, shift);
 						}
+					}
+					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
+						if (mousePressInfo[i].active
+						 && mousePressInfo[i].window == window
+						 && mousePressInfo[i].drag) {
+							window->OnMouseDragFinish(row, column, i, shift);
+						}
+						mousePressInfo[i].drag = false;
 					}
 				}
 				

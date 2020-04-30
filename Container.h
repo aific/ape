@@ -196,7 +196,17 @@ protected:
 	 * @param shift whether shift was pressed
 	 */
 	virtual void OnMouseDrag(int row, int column, int button, bool shift);
-
+	
+	/**
+	 * An event handler for finishing mouse drag
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseDragFinish(int row, int column, int button, bool shift);
+	
 	/**
 	 * An event handler for mouse wheel
 	 *

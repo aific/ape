@@ -506,6 +506,28 @@ void Container::OnMouseDrag(int row, int column, int button, bool shift)
 
 
 /**
+ * An event handler for finishing mouse drag
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Container::OnMouseDragFinish(int row, int column, int button, bool shift)
+{
+	Component* component = ComponentAt(row, column);
+	if (component == NULL) return;
+	
+	if (component->CanReceiveFocus()) {
+		component->Focus();
+	}
+	
+	component->OnMouseDragFinish(row - component->Row() - ClientRow(),
+		column - component->Column() - ClientColumn(), button, shift);
+}
+
+
+/**
  * An event handler for mouse wheel
  *
  * @param row the row
