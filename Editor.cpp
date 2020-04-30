@@ -1727,15 +1727,18 @@ void Editor::Backspace(void)
 		
 		col = col - 1;
 		
+		bool tab = false;
 		int idx = doc->StringPosition(row, actualCol);
 		const char* line = doc->Line(row);
 		if (idx > 0) {
-			if (line[idx - 1] == '\t') {
-				while (doc->StringPosition(row, col) >= idx) col--;
-			}
+			if (line[idx - 1] == '\t') tab = true;
 		}
 		
 		doc->DeleteCharFromLine(row, doc->StringPosition(row, col));
+		
+		if (tab) {
+			while (doc->StringPosition(row, col) >= idx) col--;
+		}
 		
 		if (needsPaint) Paint(); else PaintLine(row);
 	}
