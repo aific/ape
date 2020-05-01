@@ -289,6 +289,27 @@ protected:
 	virtual void OnMousePress(int row, int column, int button, bool shift);
 	
 	/**
+	 * An event handler for mouse double-click
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseDoubleClick(int row, int column, int button, bool shift);
+	
+	/**
+	 * An event handler for mouse triple-click and beyond
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param count the number of clicks
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseMultipleClick(int row, int column, int button, int count, bool shift);
+	
+	/**
 	 * An event handler for mouse drag
 	 *
 	 * @param row the row

@@ -2316,18 +2316,116 @@ void Editor::OnKeyPressed(int key)
 /**
  * An event handler for mouse press
  *
- * @param row the row
- * @param column the column
+ * @param mouseRow the row
+ * @param mouseColumn the column
  * @param button the button
  * @param shift whether shift was pressed
  */
-void Editor::OnMousePress(int row, int column, int button, bool shift)
+void Editor::OnMousePress(int mouseRow, int mouseColumn, int button, bool shift)
 {
 	if (doc == NULL) return;
 	
 	if (button == 0) {
 		doc->FinalizeEditAction();
-		MoveDocumentCursor(doc->PageStart() + row, colStart + column, shift);
+		MoveDocumentCursor(doc->PageStart() + mouseRow, colStart + mouseColumn, shift);
+		if (shift && selection && (selRow < row || (selRow == row && selCol < col))) {
+			if (col < doc->DisplayLength(row)) MoveCursorRight(true);
+		}
+	}
+}
+
+
+/**
+ * An event handler for mouse double-click
+ *
+ * @param mouseRow the row
+ * @param mouseColumn the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Editor::OnMouseDoubleClick(int mouseRow, int mouseColumn, int button, bool shift)
+{
+	if (doc == NULL) return;
+	
+	if (button == 0) {
+		int idx = doc->StringPosition(row, actualCol);
+		const char* line = doc->Line(row);
+		char c = line[idx];
+		
+		if (c == '\0') {
+			// Nothing to do
+		}
+		else if (isWordCharacter(c)) {
+			char prev = idx > 0 ? line[idx-1] : '\0';
+			if (isWordCharacter(prev)) MoveCursorBeginningWord();
+			MoveCursorEndWord(true);
+		}
+		else if (isspace(c)) {
+			
+			int fromCol = col;
+			while (fromCol > 0) {
+				int i = doc->StringPosition(row, fromCol - 1);
+				if (!isspace(line[i])) break;
+				fromCol--;
+			}
+			
+			int toCol = col;
+			while (true) {
+				int i = doc->StringPosition(row, toCol);
+				if (line[i] == '\0' || !isspace(line[i])) break;
+				toCol++;
+			}
+			
+			selCol = fromCol;
+			col = toCol;
+			selRow = row;
+			selection = true;
+			
+			EnsureValidScroll();
+			UpdateActualCursorPosition();
+			Paint();
+			UpdateCursor();
+		}
+		else {
+			MoveCursorRight(true);
+		}
+	}
+}
+
+
+/**
+ * An event handler for mouse triple-click and beyond
+ *
+ * @param mouseRow the row
+ * @param mouseColumn the column
+ * @param button the button
+ * @param count the number of clicks
+ * @param shift whether shift was pressed
+ */
+void Editor::OnMouseMultipleClick(int mouseRow, int mouseColumn, int button, int count, bool shift)
+{
+	if (doc == NULL) return;
+	
+	if (button == 0 && count == 3) {
+		
+		// TODO Support line selection mode and do that here instead
+		
+		selection = true;
+		col = 0;
+		selCol = 0;
+		selRow = row;
+		
+		if (row < doc->NumLines() - 1) {
+			row++;
+		}
+		else {
+			col = doc->DisplayLength(row);
+		}
+		
+		EnsureValidScroll();
+		UpdateActualCursorPosition();
+		Paint();
+		UpdateCursor();
 	}
 }
 
