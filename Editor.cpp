@@ -2347,7 +2347,7 @@ void Editor::OnMouseDoubleClick(int mouseRow, int mouseColumn, int button, bool 
 {
 	if (doc == NULL) return;
 	
-	if (button == 0) {
+	if (button == 0 && !shift) {
 		int idx = doc->StringPosition(row, actualCol);
 		const char* line = doc->Line(row);
 		char c = line[idx];
@@ -2406,7 +2406,7 @@ void Editor::OnMouseMultipleClick(int mouseRow, int mouseColumn, int button, int
 {
 	if (doc == NULL) return;
 	
-	if (button == 0 && count == 3) {
+	if (button == 0 && count == 3 && !shift) {
 		
 		// TODO Support line selection mode and do that here instead
 		
