@@ -373,178 +373,6 @@ void Container::OnKeyPressed(int key)
 
 
 /**
- * An event handler for mouse press
- *
- * @param row the row
- * @param column the column
- * @param button the button
- * @param shift whether shift was pressed
- */
-void Container::OnMousePress(int row, int column, int button, bool shift)
-{
-	Component* component = ComponentAt(row, column);
-	if (component == NULL) return;
-	
-	if (component->CanReceiveFocus()) {
-		component->Focus();
-	}
-	
-	component->OnMousePress(row - component->Row() - ClientRow(),
-		column - component->Column() - ClientColumn(), button, shift);
-}
-
-
-/**
- * An event handler for mouse release
- *
- * @param row the row
- * @param column the column
- * @param button the button
- * @param shift whether shift was pressed
- */
-void Container::OnMouseRelease(int row, int column, int button, bool shift)
-{
-	Component* component = ComponentAt(row, column);
-	if (component == NULL) return;
-	
-	if (component->CanReceiveFocus()) {
-		component->Focus();
-	}
-	
-	component->OnMouseRelease(row - component->Row() - ClientRow(),
-		column - component->Column() - ClientColumn(), button, shift);
-}
-
-
-/**
- * An event handler for mouse click
- *
- * @param row the row
- * @param column the column
- * @param button the button
- * @param shift whether shift was pressed
- */
-void Container::OnMouseClick(int row, int column, int button, bool shift)
-{
-	Component* component = ComponentAt(row, column);
-	if (component == NULL) return;
-	
-	if (component->CanReceiveFocus()) {
-		component->Focus();
-	}
-	
-	component->OnMouseClick(row - component->Row() - ClientRow(),
-		column - component->Column() - ClientColumn(), button, shift);
-}
-
-
-/**
- * An event handler for mouse double-click
- *
- * @param row the row
- * @param column the column
- * @param button the button
- * @param shift whether shift was pressed
- */
-void Container::OnMouseDoubleClick(int row, int column, int button, bool shift)
-{
-	Component* component = ComponentAt(row, column);
-	if (component == NULL) return;
-	
-	if (component->CanReceiveFocus()) {
-		component->Focus();
-	}
-	
-	component->OnMouseDoubleClick(row - component->Row() - ClientRow(),
-		column - component->Column() - ClientColumn(), button, shift);
-}
-
-
-/**
- * An event handler for mouse triple-click and beyond
- *
- * @param row the row
- * @param column the column
- * @param button the button
- * @param count the number of clicks
- * @param shift whether shift was pressed
- */
-void Container::OnMouseMultipleClick(int row, int column, int button, int count, bool shift)
-{
-	Component* component = ComponentAt(row, column);
-	if (component == NULL) return;
-	
-	if (component->CanReceiveFocus()) {
-		component->Focus();
-	}
-	
-	component->OnMouseMultipleClick(row - component->Row() - ClientRow(),
-		column - component->Column() - ClientColumn(), button, count, shift);
-}
-
-
-/**
- * An event handler for mouse drag
- *
- * @param row the row
- * @param column the column
- * @param button the button
- * @param shift whether shift was pressed
- */
-void Container::OnMouseDrag(int row, int column, int button, bool shift)
-{
-	Component* component = ComponentAt(row, column);
-	if (component == NULL) return;
-	
-	if (component->CanReceiveFocus()) {
-		component->Focus();
-	}
-	
-	component->OnMouseDrag(row - component->Row() - ClientRow(),
-		column - component->Column() - ClientColumn(), button, shift);
-}
-
-
-/**
- * An event handler for finishing mouse drag
- *
- * @param row the row
- * @param column the column
- * @param button the button
- * @param shift whether shift was pressed
- */
-void Container::OnMouseDragFinish(int row, int column, int button, bool shift)
-{
-	Component* component = ComponentAt(row, column);
-	if (component == NULL) return;
-	
-	if (component->CanReceiveFocus()) {
-		component->Focus();
-	}
-	
-	component->OnMouseDragFinish(row - component->Row() - ClientRow(),
-		column - component->Column() - ClientColumn(), button, shift);
-}
-
-
-/**
- * An event handler for mouse wheel
- *
- * @param row the row
- * @param column the column
- * @param wheel the wheel direction
- */
-void Container::OnMouseWheel(int row, int column, int wheel)
-{
-	Component* component = ComponentAt(row, column);
-	if (component == NULL) return;
-	
-	component->OnMouseWheel(row - component->Row() - ClientRow(),
-		column - component->Column() - ClientColumn(), wheel);
-}
-
-
-/**
  * Get the desired cursor row
  *
  * @return the desired cursor row
@@ -657,6 +485,23 @@ Component* Container::ComponentAt(int row, int column)
 		return components[i];
 	}
 	return NULL;
+}
+
+
+/**
+ * Return the component at the given coordinate recursively
+ *
+ * @param row the row
+ * @param column the column
+ * @return the component, or NULL if none
+ */
+Component* Container::ComponentAtRecursive(int row, int column)
+{
+	Component* c = ComponentAt(row, column);
+	if (c == NULL) return NULL;
+	if (!c->InstanceOfContainer()) return c;
+	return ((Container*) c)->ComponentAtRecursive(row - c->Row() - ClientRow(),
+		column - c->Column() - ClientColumn());
 }
 
 

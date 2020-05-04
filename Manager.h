@@ -80,6 +80,7 @@ class Manager
 		int row;
 		int column;
 		Window* window;
+		Component* component;
 		double time;
 		int clicks;
 		bool drag;

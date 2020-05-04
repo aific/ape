@@ -135,86 +135,6 @@ protected:
 	 * @param key the key code
 	 */
 	virtual void OnKeyPressed(int key);
-	
-	/**
-	 * An event handler for mouse press
-	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param button the button
-	 * @param shift whether shift was pressed
-	 */
-	virtual void OnMousePress(int row, int column, int button, bool shift);
-	
-	/**
-	 * An event handler for mouse release
-	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param button the button
-	 * @param shift whether shift was pressed
-	 */
-	virtual void OnMouseRelease(int row, int column, int button, bool shift);
-	
-	/**
-	 * An event handler for mouse click
-	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param button the button
-	 * @param shift whether shift was pressed
-	 */
-	virtual void OnMouseClick(int row, int column, int button, bool shift);
-	
-	/**
-	 * An event handler for mouse double-click
-	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param button the button
-	 * @param shift whether shift was pressed
-	 */
-	virtual void OnMouseDoubleClick(int row, int column, int button, bool shift);
-	
-	/**
-	 * An event handler for mouse triple-click and beyond
-	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param button the button
-	 * @param count the number of clicks
-	 * @param shift whether shift was pressed
-	 */
-	virtual void OnMouseMultipleClick(int row, int column, int button, int count, bool shift);
-	
-	/**
-	 * An event handler for mouse drag
-	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param button the button
-	 * @param shift whether shift was pressed
-	 */
-	virtual void OnMouseDrag(int row, int column, int button, bool shift);
-	
-	/**
-	 * An event handler for finishing mouse drag
-	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param button the button
-	 * @param shift whether shift was pressed
-	 */
-	virtual void OnMouseDragFinish(int row, int column, int button, bool shift);
-	
-	/**
-	 * An event handler for mouse wheel
-	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param wheel the wheel direction
-	 */
-	virtual void OnMouseWheel(int row, int column, int wheel);
 
 	/**
 	 * An event handler for moving the component
@@ -375,6 +295,15 @@ public:
 	 * @return the component, or NULL if none
 	 */
 	Component* ComponentAt(int row, int column);
+	
+	/**
+	 * Return the component at the given coordinate recursively
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @return the component, or NULL if none
+	 */
+	Component* ComponentAtRecursive(int row, int column);
 
 	/**
 	 * Return true if this container captures focus (i.e., calling FocusNext()

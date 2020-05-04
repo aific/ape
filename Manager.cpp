@@ -780,6 +780,16 @@ void Manager::ProcessMessages(void)
 				Window* window = WindowAt(event.y, event.x);
 				if (window == NULL) continue;
 				
+				int windowRow = event.y - window->Row();
+				int windowColumn = event.x - window->Column();
+				Component* component = window->ComponentAtRecursive(windowRow, windowColumn);
+				
+				if (component == NULL) {
+					component = window;
+				}
+				int row = event.y - component->ScreenRow();
+				int column = event.x - component->ScreenColumn();
+				
 				
 				// Update the mouse button states
 				
@@ -886,21 +896,23 @@ void Manager::ProcessMessages(void)
 				if ((event.bstate & REPORT_MOUSE_POSITION) == 0
 					&& ((mouseButtonStates[0] && !previousMouseButtonStates[0])
 					 || (mouseButtonStates[1] && !previousMouseButtonStates[1])
-					 || (mouseButtonStates[2] && !previousMouseButtonStates[2]))
-					&& !window->Active()) {
-					if (!window->Menu()) CloseMenus();
-					if (window != windowSwitcher && windowSwitcher != NULL) {
-						windowSwitcher->Close();
-						windowSwitcher = NULL;
+					 || (mouseButtonStates[2] && !previousMouseButtonStates[2]))) {
+					if (!window->Active()) {
+						if (!window->Menu()) CloseMenus();
+						if (window != windowSwitcher && windowSwitcher != NULL) {
+							windowSwitcher->Close();
+							windowSwitcher = NULL;
+						}
+						window->Raise();
 					}
-					window->Raise();
+					if (component->CanReceiveFocus()) {
+						component->Focus();
+					}
 				}
 				
 				
 				// Record the press
 				
-				int row = event.y - window->Row();
-				int column = event.x - window->Column();
 				bool shift = (event.bstate & BUTTON_SHIFT) != 0;
 				double time = Time();
 				bool move = (event.bstate & REPORT_MOUSE_POSITION) == 0 && mouseMoved;
@@ -909,6 +921,7 @@ void Manager::ProcessMessages(void)
 					if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {
 						if (mousePressInfo[i].active
 						 && mousePressInfo[i].window == window
+						 && mousePressInfo[i].component == component
 						 && mousePressInfo[i].row == row
 						 && mousePressInfo[i].column == column
 						 && time - mousePressInfo[i].time < 0.5) {
@@ -920,6 +933,7 @@ void Manager::ProcessMessages(void)
 							mousePressInfo[i].row = row;
 							mousePressInfo[i].column = column;
 							mousePressInfo[i].window = window;
+							mousePressInfo[i].component = component;
 							mousePressInfo[i].time = time;
 							mousePressInfo[i].clicks = 0;
 						}
@@ -934,13 +948,15 @@ void Manager::ProcessMessages(void)
 				
 				for (int i = 0; i < 3; i++) {
 					if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {
-						window->OnMousePress(row, column, i, shift);
+						component->OnMousePress(row, column, i, shift);
 					}
 				}
 				
 				for (int i = 0; i < 3; i++) {
 					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
-						window->OnMouseRelease(row, column, i, shift);
+						if (mousePressInfo[i].active) {
+							mousePressInfo[i].component->OnMouseRelease(row, column, i, shift);
+						}
 					}
 				}
 				
@@ -948,18 +964,19 @@ void Manager::ProcessMessages(void)
 					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
 						if (mousePressInfo[i].active
 						 && mousePressInfo[i].window == window
+						 && mousePressInfo[i].component == component
 						 && mousePressInfo[i].row == row
 						 && mousePressInfo[i].column == column
 						 && time - mousePressInfo[i].time < 0.5) {
 						 	mousePressInfo[i].clicks++;
 						 	if (mousePressInfo[i].clicks == 1) {
-								window->OnMouseClick(row, column, i, shift);
+								component->OnMouseClick(row, column, i, shift);
 							}
 							else if (mousePressInfo[i].clicks == 2) {
-								window->OnMouseDoubleClick(row, column, i, shift);
+								component->OnMouseDoubleClick(row, column, i, shift);
 							}
 							else {
-								window->OnMouseMultipleClick(row, column, i,
+								component->OnMouseMultipleClick(row, column, i,
 									mousePressInfo[i].clicks, shift);
 							}
 							mousePressInfo[i].time = time;
@@ -972,17 +989,13 @@ void Manager::ProcessMessages(void)
 						if (move) {
 							mousePressInfo[i].drag = true;
 						}
-						if (mousePressInfo[i].active
-						 && mousePressInfo[i].window == window
-						 && move) {
-							window->OnMouseDrag(row, column, i, shift);
+						if (mousePressInfo[i].active && move) {
+							mousePressInfo[i].component->OnMouseDrag(row, column, i, shift);
 						}
 					}
 					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
-						if (mousePressInfo[i].active
-						 && mousePressInfo[i].window == window
-						 && mousePressInfo[i].drag) {
-							window->OnMouseDragFinish(row, column, i, shift);
+						if (mousePressInfo[i].active && mousePressInfo[i].drag) {
+							mousePressInfo[i].component->OnMouseDragFinish(row, column, i, shift);
 						}
 						mousePressInfo[i].drag = false;
 					}
@@ -990,7 +1003,7 @@ void Manager::ProcessMessages(void)
 				
 				if (mouseButtonStates[3] || mouseButtonStates[4]) {
 					int wheel = mouseButtonStates[3] ? -1 : 1;
-					window->OnMouseWheel(row, column, wheel);
+					component->OnMouseWheel(row, column, wheel);
 				}
 				
 				

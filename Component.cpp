@@ -90,7 +90,7 @@ Component::Component(Container* _parent, bool _focusable, int _row, int _col,
 	}
 
 
-	// Create the Curses window
+	// Create the window buffer
 	
 	screenRow = parent == NULL
 		? row : parent->ScreenRow() + parent->ClientRow() + row;
