@@ -45,6 +45,9 @@
 #define WCM_RESTORE		4
 #define WCM_CLOSE		0xDEAD
 
+#define WIN_CORNER_H	3
+#define WIN_CORNER_V	2
+
 
 /**
  * Create an instance of class Window
@@ -61,6 +64,9 @@ Window::Window(const char* _title, int _row, int _col, int _rows, int _cols,
 		int _bg, int _fg)
 	: Container(NULL, _row, _col, _rows, _cols)
 {
+
+	canHandleMultiClicks = true;
+
 
 	// Copy the parameters
 	
@@ -422,3 +428,48 @@ void Window::OnWindowMenu(int code)
 }
 
 
+/**
+ * An event handler for mouse double-click
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Window::OnMouseDoubleClick(int row, int column, int button, bool shift)
+{
+	if (allowMaximize && button == 0 && row == 0 && column >= WIN_CORNER_H
+	 && column < Columns() - WIN_CORNER_H) {
+		if (maximized) {
+			Restore();
+		}
+		else {
+			Maximize();
+		}
+	}
+}
+
+
+/**
+ * An event handler for mouse drag
+ *
+ * @param event the mouse event
+ */
+void Window::OnMouseDrag(const MouseDragEvent& event)
+{
+	if (allowMove && event.button == 0 && event.startRow == 0
+	 && event.startColumn >= WIN_CORNER_H
+	 && event.startColumn < Columns() - WIN_CORNER_H) {
+		Move(Row() + event.deltaRow, Column() + event.deltaColumn);
+	}
+}
+
+
+/**
+ * An event handler for finishing mouse drag
+ *
+ * @param event the mouse event
+ */
+void Window::OnMouseDragFinish(const MouseDragEvent& event)
+{
+}

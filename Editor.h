@@ -312,22 +312,16 @@ protected:
 	/**
 	 * An event handler for mouse drag
 	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param button the button
-	 * @param shift whether shift was pressed
+	 * @param event the mouse event
 	 */
-	virtual void OnMouseDrag(int row, int column, int button, bool shift);
+	virtual void OnMouseDrag(const MouseDragEvent& event);
 	
 	/**
 	 * An event handler for finishing mouse drag
 	 *
-	 * @param row the row
-	 * @param column the column
-	 * @param button the button
-	 * @param shift whether shift was pressed
+	 * @param event the mouse event
 	 */
-	virtual void OnMouseDragFinish(int row, int column, int button, bool shift);
+	virtual void OnMouseDragFinish(const MouseDragEvent& event);
 	
 	/**
 	 * An event handler for mouse wheel

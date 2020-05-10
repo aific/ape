@@ -2433,18 +2433,15 @@ void Editor::OnMouseMultipleClick(int mouseRow, int mouseColumn, int button, int
 /**
  * An event handler for mouse drag
  *
- * @param row the row
- * @param column the column
- * @param button the button
- * @param shift whether shift was pressed
+ * @param event the mouse event
  */
-void Editor::OnMouseDrag(int row, int column, int button, bool shift)
+void Editor::OnMouseDrag(const MouseDragEvent& event)
 {
 	if (doc == NULL) return;
 	
-	if (button == 0) {
+	if (event.button == 0) {
 		doc->FinalizeEditAction();
-		MoveDocumentCursor(doc->PageStart() + row, colStart + column, true);
+		MoveDocumentCursor(doc->PageStart() + event.row, colStart + event.column, true);
 	}
 }
 
@@ -2452,16 +2449,13 @@ void Editor::OnMouseDrag(int row, int column, int button, bool shift)
 /**
  * An event handler for finishing mouse drag
  *
- * @param mouseRow the row
- * @param mouseColumn the column
- * @param button the button
- * @param shift whether shift was pressed
+ * @param event the mouse event
  */
-void Editor::OnMouseDragFinish(int mouseRow, int mouseColumn, int button, bool shift)
+void Editor::OnMouseDragFinish(const MouseDragEvent& event)
 {
 	if (doc == NULL) return;
 	
-	if (button == 0 && selection) {
+	if (event.button == 0 && selection) {
 		doc->FinalizeEditAction();
 		
 		// If the selection created by drag ends up with cursor on the right,

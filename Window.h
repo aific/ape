@@ -133,6 +133,30 @@ protected:
 	 * @param code the menu exit code
 	 */
 	virtual void OnWindowMenu(int code);
+	
+	/**
+	 * An event handler for mouse double-click
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMouseDoubleClick(int row, int column, int button, bool shift);
+	
+	/**
+	 * An event handler for mouse drag
+	 *
+	 * @param event the mouse event
+	 */
+	virtual void OnMouseDrag(const MouseDragEvent& event);
+	
+	/**
+	 * An event handler for finishing mouse drag
+	 *
+	 * @param event the mouse event
+	 */
+	virtual void OnMouseDragFinish(const MouseDragEvent& event);
 
 public:
 
@@ -240,5 +264,3 @@ public:
 };
 
 #endif
-
-

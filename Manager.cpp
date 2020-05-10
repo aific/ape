@@ -778,17 +778,26 @@ void Manager::ProcessMessages(void)
 			else {
 				
 				Window* window = WindowAt(event.y, event.x);
-				if (window == NULL) continue;
+				int windowRow = event.y;
+				int windowColumn = event.x;
 				
-				int windowRow = event.y - window->Row();
-				int windowColumn = event.x - window->Column();
-				Component* component = window->ComponentAtRecursive(windowRow, windowColumn);
+				Component* component = NULL;
+				int row = event.y;
+				int column = event.x;
 				
-				if (component == NULL) {
-					component = window;
+				if (window != NULL) {
+					
+					windowRow = event.y - window->Row();
+					windowColumn = event.x - window->Column();
+					component = window->ComponentAtRecursive(windowRow, windowColumn);
+					
+					if (component == NULL) {
+						component = window;
+					}
+					
+					row = event.y - component->ScreenRow();
+					column = event.x - component->ScreenColumn();
 				}
-				int row = event.y - component->ScreenRow();
-				int column = event.x - component->ScreenColumn();
 				
 				
 				// Update the mouse button states
@@ -894,6 +903,7 @@ void Manager::ProcessMessages(void)
 				// Raise the window on button activity
 				
 				if ((event.bstate & REPORT_MOUSE_POSITION) == 0
+					&& window != NULL
 					&& ((mouseButtonStates[0] && !previousMouseButtonStates[0])
 					 || (mouseButtonStates[1] && !previousMouseButtonStates[1])
 					 || (mouseButtonStates[2] && !previousMouseButtonStates[2]))) {
@@ -922,8 +932,8 @@ void Manager::ProcessMessages(void)
 						if (mousePressInfo[i].active
 						 && mousePressInfo[i].window == window
 						 && mousePressInfo[i].component == component
-						 && mousePressInfo[i].row == row
-						 && mousePressInfo[i].column == column
+						 && mousePressInfo[i].screenRow == event.y
+						 && mousePressInfo[i].screenColumn == event.x
 						 && time - mousePressInfo[i].time < 0.5) {
 							mousePressInfo[i].time = time;
 						}
@@ -932,6 +942,12 @@ void Manager::ProcessMessages(void)
 							mousePressInfo[i].shift = shift;
 							mousePressInfo[i].row = row;
 							mousePressInfo[i].column = column;
+							mousePressInfo[i].screenRow = event.y;
+							mousePressInfo[i].screenColumn = event.x;
+							mousePressInfo[i].startRow = row;
+							mousePressInfo[i].startColumn = column;
+							mousePressInfo[i].lastScreenRow = event.y;
+							mousePressInfo[i].lastScreenColumn = event.x;
 							mousePressInfo[i].window = window;
 							mousePressInfo[i].component = component;
 							mousePressInfo[i].time = time;
@@ -943,43 +959,44 @@ void Manager::ProcessMessages(void)
 				
 				// Pass event to the window (click-through)
 				
-				// TODO Handle release and drag within the original window (which
-				// also means that the coordinates could end up being outside!)
-				
-				for (int i = 0; i < 3; i++) {
-					if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {
-						component->OnMousePress(row, column, i, shift);
-					}
-				}
-				
-				for (int i = 0; i < 3; i++) {
-					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
-						if (mousePressInfo[i].active) {
-							mousePressInfo[i].component->OnMouseRelease(row, column, i, shift);
+				if (component != NULL) {
+					for (int i = 0; i < 3; i++) {
+						if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {
+							component->OnMousePress(row, column, i, shift);
 						}
 					}
 				}
 				
 				for (int i = 0; i < 3; i++) {
 					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
-						if (mousePressInfo[i].active
-						 && mousePressInfo[i].window == window
-						 && mousePressInfo[i].component == component
-						 && mousePressInfo[i].row == row
-						 && mousePressInfo[i].column == column
-						 && time - mousePressInfo[i].time < 0.5) {
-						 	mousePressInfo[i].clicks++;
-						 	if (mousePressInfo[i].clicks == 1) {
-								component->OnMouseClick(row, column, i, shift);
+						if (mousePressInfo[i].active && mousePressInfo[i].component != NULL) {
+							mousePressInfo[i].component->OnMouseRelease(row, column, i, shift);
+						}
+					}
+				}
+				
+				if (component != NULL) {
+					for (int i = 0; i < 3; i++) {
+						if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
+							if (mousePressInfo[i].active
+							 && mousePressInfo[i].window == window
+							 && mousePressInfo[i].component == component
+							 && mousePressInfo[i].row == row
+							 && mousePressInfo[i].column == column
+							 && time - mousePressInfo[i].time < 0.5) {
+							 	mousePressInfo[i].clicks++;
+							 	if (mousePressInfo[i].clicks == 1) {
+									component->OnMouseClick(row, column, i, shift);
+								}
+								else if (mousePressInfo[i].clicks == 2) {
+									component->OnMouseDoubleClick(row, column, i, shift);
+								}
+								else {
+									component->OnMouseMultipleClick(row, column, i,
+										mousePressInfo[i].clicks, shift);
+								}
+								mousePressInfo[i].time = time;
 							}
-							else if (mousePressInfo[i].clicks == 2) {
-								component->OnMouseDoubleClick(row, column, i, shift);
-							}
-							else {
-								component->OnMouseMultipleClick(row, column, i,
-									mousePressInfo[i].clicks, shift);
-							}
-							mousePressInfo[i].time = time;
 						}
 					}
 				}
@@ -989,21 +1006,46 @@ void Manager::ProcessMessages(void)
 						if (move) {
 							mousePressInfo[i].drag = true;
 						}
-						if (mousePressInfo[i].active && move) {
-							mousePressInfo[i].component->OnMouseDrag(row, column, i, shift);
+						if (mousePressInfo[i].component && mousePressInfo[i].active && move) {
+							MouseDragEvent e;
+							e.row = row;
+							e.column = column;
+							e.screenRow = event.y;
+							e.screenColumn = event.x;
+							e.shift = shift;
+							e.button = i;
+							e.startRow = mousePressInfo[i].startRow;
+							e.startColumn = mousePressInfo[i].startColumn;
+							e.deltaRow = event.y - mousePressInfo[i].lastScreenRow;
+							e.deltaColumn = event.x - mousePressInfo[i].lastScreenColumn;
+							mousePressInfo[i].component->OnMouseDrag(e);
 						}
 					}
 					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
-						if (mousePressInfo[i].active && mousePressInfo[i].drag) {
-							mousePressInfo[i].component->OnMouseDragFinish(row, column, i, shift);
+						if (mousePressInfo[i].component && mousePressInfo[i].active
+						 && mousePressInfo[i].drag) {
+							MouseDragEvent e;
+							e.row = row;
+							e.column = column;
+							e.screenRow = event.y;
+							e.screenColumn = event.x;
+							e.shift = shift;
+							e.button = i;
+							e.startRow = mousePressInfo[i].startRow;
+							e.startColumn = mousePressInfo[i].startColumn;
+							e.deltaRow = 0;
+							e.deltaColumn = 0;
+							mousePressInfo[i].component->OnMouseDragFinish(e);
 						}
 						mousePressInfo[i].drag = false;
 					}
 				}
 				
-				if (mouseButtonStates[3] || mouseButtonStates[4]) {
-					int wheel = mouseButtonStates[3] ? -1 : 1;
-					component->OnMouseWheel(row, column, wheel);
+				if (component != NULL) {
+					if (mouseButtonStates[3] || mouseButtonStates[4]) {
+						int wheel = mouseButtonStates[3] ? -1 : 1;
+						component->OnMouseWheel(row, column, wheel);
+					}
 				}
 				
 				
@@ -1011,6 +1053,16 @@ void Manager::ProcessMessages(void)
 				
 				mouseButtonStates[3] = false;
 				mouseButtonStates[4] = false;
+				
+				
+				// Get ready for the next iteration
+				
+				for (int i = 0; i < 3; i++) {
+					if (mousePressInfo[i].active) {
+						mousePressInfo[i].lastScreenRow = event.y;
+						mousePressInfo[i].lastScreenColumn = event.x;
+					}
+				}
 			}
 		}
 

@@ -693,14 +693,11 @@ void AbstractList::OnMouseDoubleClick(int row, int column, int button, bool shif
 /**
  * An event handler for mouse drag
  *
- * @param row the row
- * @param column the column
- * @param button the button
- * @param shift whether shift was pressed
+ * @param event the mouse event
  */
-void AbstractList::OnMouseDrag(int row, int column, int button, bool shift)
+void AbstractList::OnMouseDrag(const MouseDragEvent& event)
 {
-	OnMousePress(row, column, button, true);
+	OnMousePress(event.row, event.column, event.button, true);
 }
 
 

@@ -79,6 +79,12 @@ class Manager
 		bool shift;
 		int row;
 		int column;
+		int screenRow;
+		int screenColumn;
+		int startRow;
+		int startColumn;
+		int lastScreenRow;
+		int lastScreenColumn;
 		Window* window;
 		Component* component;
 		double time;
