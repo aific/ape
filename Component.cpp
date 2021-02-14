@@ -369,6 +369,7 @@ void Component::Move(int _row, int _col)
 	if (parent == NULL) {
 		if (row > wm.Rows() - rows - 1) row = wm.Rows() - rows - 1;
 		if (col > wm.Columns() - cols) col = wm.Columns() - cols;
+		if (row < 1) row = 1;
 	}
 	else {
 		if (row > parent->ClientRows()    - rows)
