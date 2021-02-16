@@ -98,6 +98,7 @@ Window::Window(const char* _title, int _row, int _col, int _rows, int _cols,
 	windowMenu = NULL;
 	wmMode = WM_NORMAL;
 	maximized = false;
+	dragMode = WINDOW_DRAG_NONE;
 }
 
 
@@ -429,6 +430,31 @@ void Window::OnWindowMenu(int code)
 
 
 /**
+ * An event handler for mouse press
+ *
+ * @param row the row
+ * @param column the column
+ * @param button the button
+ * @param shift whether shift was pressed
+ */
+void Window::OnMousePress(int row, int column, int button, bool shift)
+{
+	if (allowMove && button == 0 && row == 0
+	 && column >= WIN_CORNER_H && column < Columns() - WIN_CORNER_H) {
+		dragMode = WINDOW_DRAG_MOVE;
+	}
+	else if (allowResize && button == 0
+	 && ((row >= Rows() - WIN_CORNER_V - 1 && row < Rows() - 1 && column == Columns())
+	  || (row == Rows() - 1 && column >= Columns() - WIN_CORNER_H))) {
+		dragMode = WINDOW_DRAG_RESIZE_BR;
+	}
+	else {
+		dragMode = WINDOW_DRAG_NONE;
+	}
+}
+
+
+/**
  * An event handler for mouse double-click
  *
  * @param row the row
@@ -457,10 +483,13 @@ void Window::OnMouseDoubleClick(int row, int column, int button, bool shift)
  */
 void Window::OnMouseDrag(const MouseDragEvent& event)
 {
-	if (allowMove && event.button == 0 && event.startRow == 0
-	 && event.startColumn >= WIN_CORNER_H
-	 && event.startColumn < Columns() - WIN_CORNER_H) {
+	switch (dragMode) {
+	case WINDOW_DRAG_MOVE:
 		Move(Row() + event.deltaRow, Column() + event.deltaColumn);
+		break;
+	case WINDOW_DRAG_RESIZE_BR:
+		Resize(Rows() + event.deltaRow, Columns() + event.deltaColumn);
+		break;
 	}
 }
 

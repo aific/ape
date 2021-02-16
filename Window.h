@@ -37,10 +37,14 @@
 
 #include "Container.h"
 
-#define WM_NORMAL		0
-#define WM_MOVE			1
-#define WM_RESIZE		2
-#define WM_CLOSED		0xDEAD
+#define WM_NORMAL				0
+#define WM_MOVE					1
+#define WM_RESIZE				2
+#define WM_CLOSED				0xDEAD
+
+#define WINDOW_DRAG_NONE		0
+#define WINDOW_DRAG_MOVE		1
+#define WINDOW_DRAG_RESIZE_BR	2
 
 class Manager;
 class MenuWindow;
@@ -70,6 +74,8 @@ class Window : public Container
 	int wmMoveItem;
 	int wmResizeItem;
 	int wmMaximizeItem;
+	
+	int dragMode;
 
 
 	/**
@@ -133,6 +139,16 @@ protected:
 	 * @param code the menu exit code
 	 */
 	virtual void OnWindowMenu(int code);
+	
+	/**
+	 * An event handler for mouse press
+	 *
+	 * @param row the row
+	 * @param column the column
+	 * @param button the button
+	 * @param shift whether shift was pressed
+	 */
+	virtual void OnMousePress(int row, int column, int button, bool shift);
 	
 	/**
 	 * An event handler for mouse double-click
