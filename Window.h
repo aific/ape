@@ -134,6 +134,21 @@ protected:
 	virtual void OnKeyPressed(int key);
 
 	/**
+	 * An event handler for moving the component
+	 */
+	virtual void OnMove(void);
+
+	/**
+	 * An event handler for resizing the component
+	 *
+	 * @param oldRows the old number of rows
+	 * @param oldCols the old number of columns
+	 * @param newRows the new number of rows
+	 * @param newCols the new number of columns
+	 */
+	virtual void OnResize(int oldRows, int oldCols, int newRows, int newCols);
+
+	/**
 	 * An event handler for exiting a window menu
 	 *
 	 * @param code the menu exit code

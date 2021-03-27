@@ -223,9 +223,9 @@ void Window::Maximize(void)
 
 	// Move to the new state
 
-	maximized = true;
 	Move(1, 0);
 	Resize(wm.Rows() - 2, wm.Columns());
+	maximized = true;
 	wm.Paint();
 
 
@@ -386,6 +386,53 @@ void Window::OnKeyPressed(int key)
 	}
 
 	Container::OnKeyPressed(key);
+}
+
+
+/**
+ * An event handler for moving the component
+ */
+void Window::OnMove(void)
+{
+	Container::OnMove();
+
+
+	// Update the menu
+
+	if (windowMenu != NULL) {
+		maximized = false;
+		EnsureWindowMenu();
+		windowMenu->Replace(wmMaximizeItem, "Maximize", 2, WCM_MAXIMIZE);
+		windowMenu->Enable(wmMoveItem);
+		windowMenu->Enable(wmResizeItem);
+		windowMenu->UpdateMenu();
+	}
+}
+
+
+/**
+ * An event handler for resizing the component
+ *
+ * @param oldRows the old number of rows
+ * @param oldCols the old number of columns
+ * @param newRows the new number of rows
+ * @param newCols the new number of columns
+ */
+void Window::OnResize(int oldRows, int oldCols, int newRows, int newCols)
+{
+	Container::OnResize(oldRows, oldCols, newRows, newCols);
+
+
+	// Update the menu
+
+	if (windowMenu != NULL) {
+		maximized = false;
+		EnsureWindowMenu();
+		windowMenu->Replace(wmMaximizeItem, "Maximize", 2, WCM_MAXIMIZE);
+		windowMenu->Enable(wmMoveItem);
+		windowMenu->Enable(wmResizeItem);
+		windowMenu->UpdateMenu();
+	}
 }
 
 
