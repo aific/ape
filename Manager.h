@@ -102,6 +102,16 @@ class Manager
 	std::vector<Window*>::iterator Find(Window* w);
 
 	/**
+	 * Parse an SGR (mode 1006) mouse escape sequence.  The ESC byte has
+	 * already been consumed; this peeks the rest and either fills in event
+	 * (returning true) or pushes the peeked bytes back (returning false).
+	 *
+	 * @param event the event to fill in
+	 * @return true if a mouse sequence was parsed
+	 */
+	bool ParseSGRMouse(MEVENT& event);
+
+	/**
 	 * Paint the main window
 	 */
 	void PaintMain(void);

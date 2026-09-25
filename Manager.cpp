@@ -127,7 +127,7 @@ void Manager::Initialize(void)
 	
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 	mouseinterval(0 /* ms */);
-	printf("\033[?1002h");  // Configure the terminal to report mouse movements
+	printf("\033[?1002h\033[?1006h");  // Configure the terminal to report mouse movements
 	fflush(stdout);
 
 
@@ -180,7 +180,7 @@ void Manager::Shutdown(void)
 	delete tcw;
 	delwin(win);
 
-	printf("\033[?1002l");  // Configure the terminal to stop reporting mouse movements
+	printf("\033[?1006l\033[?1002l");  // Configure the terminal to stop reporting mouse movements
 	fflush(stdout);
 
 	endwin();
@@ -653,6 +653,88 @@ void Manager::TerminalResized(void)
 
 
 /**
+ * Parse an SGR (mode 1006) mouse escape sequence.  The ESC byte has already
+ * been consumed from the input queue.  If the next bytes form
+ *   \033[<button;x;yM   (press or motion)
+ *   \033[<button;x;ym   (release)
+ * then fill in event and return true.  Otherwise push the peeked bytes back
+ * and return false, so the escape-sequence translator can handle them.
+ *
+ * @param event the event to fill in
+ * @return true if a mouse sequence was parsed
+ */
+bool Manager::ParseSGRMouse(MEVENT& event)
+{
+	int c1 = getch();
+	if (c1 != '[') {
+		if (c1 != ERR) ungetch(c1);
+		return false;
+	}
+
+	int c2 = getch();
+	if (c2 != '<') {
+		if (c2 != ERR) ungetch(c2);
+		ungetch(c1);
+		return false;
+	}
+
+	// Read button, x, y as decimals
+	int b = 0, x = 0, y = 0, c;
+	while ((c = getch()) != ';' && c != ERR)
+		if (c >= '0' && c <= '9') b = b * 10 + (c - '0');
+	if (c != ';') return false;
+	while ((c = getch()) != ';' && c != ERR)
+		if (c >= '0' && c <= '9') x = x * 10 + (c - '0');
+	if (c != ';') return false;
+	while ((c = getch()) != 'M' && c != 'm' && c != ERR)
+		if (c >= '0' && c <= '9') y = y * 10 + (c - '0');
+	if (c != 'M' && c != 'm') return false;
+
+	bool release = (c == 'm');
+	int btn = b & 3;
+	bool motion = (b & 32) != 0;
+	bool wheel = (b & 64) != 0;
+	bool shift = (b & 4) != 0;
+
+	event.x = x > 0 ? x - 1 : 0;	// SGR coordinates are 1-based
+	event.y = y > 0 ? y - 1 : 0;
+	event.z = 0;
+	event.bstate = 0;
+
+	if (wheel) {
+		if (btn == 0) {
+			event.bstate = BUTTON4_PRESSED;			// wheel up
+		}
+		else {
+			// wheel down: v1 has no BUTTON5, so reuse the BUTTON2 quirk
+			// that the manager's button-state code already handles.
+#ifdef BUTTON5_PRESSED
+			event.bstate = BUTTON5_PRESSED;
+#else
+			event.bstate = BUTTON2_PRESSED;
+#endif
+		}
+	}
+	else if (motion) {
+		event.bstate = REPORT_MOUSE_POSITION;
+	}
+	else {
+		int pressed, released;
+		switch (btn) {
+			case 0:  pressed = BUTTON1_PRESSED;  released = BUTTON1_RELEASED; break;
+			case 1:  pressed = BUTTON2_PRESSED;  released = BUTTON2_RELEASED; break;
+			case 2:  pressed = BUTTON3_PRESSED;  released = BUTTON3_RELEASED; break;
+			default: pressed = 0;                released = 0;                break;
+		}
+		event.bstate = release ? released : pressed;
+	}
+
+	if (shift) event.bstate |= BUTTON_SHIFT;
+	return true;
+}
+
+
+/**
  * Process pending messages
  */
 void Manager::ProcessMessages(void)
@@ -661,6 +743,18 @@ void Manager::ProcessMessages(void)
 	processMessagesDepth++;
 
 	while ((key = getch()) != ERR) {
+
+
+		// macOS ncurses does not parse SGR (mode 1006) mouse sequences, so
+		// they arrive as a raw ESC ([<b;x;y[Mm]).  Detect and parse them
+		// here, before the escape-sequence translator below.
+
+		MEVENT sgrEvent;
+		bool gotSGR = false;
+		if (key == KEY_ESC && ParseSGRMouse(sgrEvent)) {
+			key = KEY_MOUSE;
+			gotSGR = true;
+		}
 
 
 		// Translate the Shift-Arrow key combinations
@@ -774,10 +868,16 @@ void Manager::ProcessMessages(void)
 		
 		if (key == KEY_MOUSE) {
 			MEVENT event;
-			if (getmouse(&event) != OK) {
-				log(LL_WARNING, "Error in getmouse()");
+			bool ok;
+			if (gotSGR) {
+				event = sgrEvent;
+				ok = true;
 			}
 			else {
+				ok = getmouse(&event) == OK;
+				if (!ok) log(LL_WARNING, "Error in getmouse()");
+			}
+			if (ok) {
 				
 				Window* window = WindowAt(event.y, event.x);
 				int windowRow = event.y;
