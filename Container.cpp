@@ -331,10 +331,10 @@ void Container::OnResize(int oldRows, int oldCols, int newRows, int newCols)
 		if (r != new_r || c != new_c) {
 			if (h != new_h || w != new_w) {
 				if (new_h < h) components[u]->Resize(new_h, w);
-				if (new_w < w) components[u]->Resize(h, new_w);
+				if (new_w < w) components[u]->Resize(new_h, new_w);
 				components[u]->Move(new_r, new_c);
-				if (new_h > h) components[u]->Resize(new_h, w);
-				if (new_w > w) components[u]->Resize(h, new_w);
+				if (new_h > h) components[u]->Resize(new_h, new_w);
+				if (new_w > w) components[u]->Resize(new_h, new_w);
 			}
 			else {
 				// Move only
@@ -441,6 +441,7 @@ ssize_t Container::ComponentIndex(Component* component)
 Component* Container::ActiveComponent(void)
 {
 	if (canReceiveFocus) {
+		if (activeComponent >= components.size()) return NULL;
 		Component* c = components[activeComponent];
 		if (c != NULL && c->Visible())
 			return c;

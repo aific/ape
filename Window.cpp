@@ -491,7 +491,7 @@ void Window::OnMousePress(int row, int column, int button, bool shift)
 		dragMode = WINDOW_DRAG_MOVE;
 	}
 	else if (allowResize && button == 0
-	 && ((row >= Rows() - WIN_CORNER_V - 1 && row < Rows() - 1 && column == Columns())
+	 && ((row >= Rows() - WIN_CORNER_V - 1 && row < Rows() - 1 && column == Columns() - 1)
 	  || (row == Rows() - 1 && column >= Columns() - WIN_CORNER_H))) {
 		dragMode = WINDOW_DRAG_RESIZE_BR;
 	}

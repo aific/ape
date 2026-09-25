@@ -127,7 +127,8 @@ void Manager::Initialize(void)
 	
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 	mouseinterval(0 /* ms */);
-	printf("\033[?1002h\n");  // Configure the terminal to report mouse movements
+	printf("\033[?1002h");  // Configure the terminal to report mouse movements
+	fflush(stdout);
 
 
 	// Get the screen size
@@ -179,7 +180,8 @@ void Manager::Shutdown(void)
 	delete tcw;
 	delwin(win);
 
-	printf("\033[?1003l\n");  // Configure the terminal to stop reporting mouse movements
+	printf("\033[?1002l");  // Configure the terminal to stop reporting mouse movements
+	fflush(stdout);
 
 	endwin();
 }
@@ -925,7 +927,7 @@ void Manager::ProcessMessages(void)
 				
 				bool shift = (event.bstate & BUTTON_SHIFT) != 0;
 				double time = Time();
-				bool move = (event.bstate & REPORT_MOUSE_POSITION) == 0 && mouseMoved;
+				bool move = mouseMoved;
 				
 				for (int i = 0; i < 3; i++) {
 					if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {

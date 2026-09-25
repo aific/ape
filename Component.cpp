@@ -568,6 +568,7 @@ void Component::Focus(void)
 
 		ssize_t i = c->ComponentIndex(last);
 		assert(i >= 0);
+		if (i < 0) break;
 		c->activeComponent = i;
 	}
 

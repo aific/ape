@@ -96,9 +96,10 @@ $(BUILD_DIR)/project.mk: $(ALL_SOURCES) *.h
 	@echo 'all: $(ALL_OBJECTS)' >> $@
 	@echo >> $@
 	@for S in $(ALL_SOURCES); do \
-		$(DEPEND) $$S | sed 's|^[a-zA-Z0-9]*\.o|$(BUILD_DIR)\/&|' >> $@; \
+		$(DEPEND) $$S | sed 's|^[a-zA-Z0-9]*\.o|$(BUILD_DIR)\/&|' \
+			| sed -E 's| /[^ ]*SDKSettings\.json||g' >> $@; \
 		if [[ $${PIPESTATUS[0]} -ne 0 ]]; then exit 1; fi; \
-		echo '	$(COMPILE) -o $$@ $$<' >> $@; \
+		echo '	$(COMPILE) -o $$@ $$(patsubst build/%.o,%.cpp,$$@)' >> $@; \
 		echo >> $@; \
 	done
 
