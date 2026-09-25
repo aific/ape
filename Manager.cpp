@@ -37,6 +37,7 @@
 
 #include <sys/ioctl.h>
 #include <csignal>
+#include <termios.h>
 
 #ifdef _MAC
 #include <util.h>
@@ -121,8 +122,16 @@ void Manager::Initialize(void)
 	raw();
 	keypad(stdscr, TRUE);
 	nodelay(stdscr, TRUE);
-	
-	
+
+	// Make sure flow control is off, so Ctrl-S (XOFF) and Ctrl-Q (XON) are
+	// delivered as key events rather than swallowed by the terminal driver.
+	struct termios t;
+	if (tcgetattr(STDIN_FILENO, &t) == 0) {
+		t.c_iflag &= ~(IXON | IXOFF | IXANY);
+		tcsetattr(STDIN_FILENO, TCSANOW, &t);
+	}
+
+
 	// Initialize mouse
 	
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
