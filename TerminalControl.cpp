@@ -3,21 +3,21 @@
  *
  * Copyright (c) 2015, Peter Macko
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice, 
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
  * this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the copyright holder nor the names of its
  * contributors may be used to endorse or promote products derived from this
  * software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -155,33 +155,67 @@ void TerminalControlWindow::Resize(int rows, int cols)
  * Paint onto the given curses window
  *
  * @param win the curses window
- * @param row the row
- * @param col the column
+ * @param tcwPrev the previous terminal control window (to draw a difference)
  */
-void TerminalControlWindow::Paint(WINDOW* win, int row, int col)
+void TerminalControlWindow::Paint(WINDOW* win, TerminalControlWindow* tcwPrev)
 {
 	int winRows, winCols;
 	getmaxyx(win, winRows, winCols);
-	if (row >= winRows || col >= winCols) return;
+
+	bool doDiff = false;
+	if (tcwPrev != NULL) {
+		doDiff = Rows() != tcwPrev->Rows() || Columns() != tcwPrev->Columns();
+		if (doDiff) {
+			tcwPrev->Resize(Rows(), Columns());
+		}
+	}
 
 	for (int r = 0; r < (int) lines.size(); r++) {
-		if (r + row < 0) continue;
-		if (r + row >= winRows) break;
+		if (r < 0) continue;
+		if (r >= winRows) break;
 
 		Line& line = *lines[r];
-		wmove(win, r + row, col);
+		wmove(win, r, 0);
 
-		for (int c = col < 0 ? -col : 0; c < line.Length(); c++) {
-			if (c + col >= winCols) break;
+		int lastCol = -1;
+		for (int c = 0; c < line.Length(); c++) {
+			if (c >= winCols) break;
 			Character& ch = line[c];
+
+			if (doDiff && tcwPrev->At(r, c) == ch) continue;
+
+			if (lastCol + 1 != c) {
+				wmove(win, r, c);
+			}
 
 			char cc = ch.character;
 			if (iscntrl(cc)) cc = '?';
 
 			wattrset(win, ch.attributes);
 			waddch(win, cc);
+			lastCol = c;
+
+			if (tcwPrev != NULL) {
+				tcwPrev->At(r, c) = ch;
+			}
 		}
 	}
+}
+
+
+/**
+ * Get a writable reference to the given character
+ *
+ * @param row the row
+ * @param col the column
+ * @return the character reference
+ */
+TerminalControlWindow::Character& TerminalControlWindow::At(int row, int col)
+{
+	assert(row >= 0 && row < (int) lines.size());
+	Line& line = *lines[row];
+	assert(col >= 0 && col < line.Length());
+	return line[col];
 }
 
 

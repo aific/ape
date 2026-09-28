@@ -3,21 +3,21 @@
  *
  * Copyright (c) 2015, Peter Macko
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice, 
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
  * this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the copyright holder nor the names of its
  * contributors may be used to endorse or promote products derived from this
  * software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -53,6 +53,26 @@ class TerminalControlWindow
 	{
 		char character;
 		int attributes;
+
+		/**
+		 * Compare two characters for equality
+		 *
+		 * @param other the other character
+		 * @return true if equal, false otherwise
+		 */
+		inline bool operator==(const Character& other) const {
+			return character == other.character && attributes == other.attributes;
+		}
+
+		/**
+		 * Compare two characters for inequality
+		 *
+		 * @param other the other character
+		 * @return true if not equal, false otherwise
+		 */
+		inline bool operator!=(const Character& other) const {
+			return !(*this == other);
+		}
 	};
 
 
@@ -63,7 +83,7 @@ class TerminalControlWindow
 	{
 		std::vector<Character> contents;
 
-	
+
 	public:
 
 		/**
@@ -145,11 +165,25 @@ public:
 	~TerminalControlWindow();
 
 	/**
+	 * Return the number of rows
+	 *
+	 * @return the number of rows
+	 */
+	inline int Rows() const { return lines.size(); }
+
+	/**
+	 * Return the number of columns
+	 *
+	 * @return the number of columns
+	 */
+	inline int Columns() const { return lines.empty() ? 0 : lines[0]->Length(); }
+
+	/**
 	 * Return true if the window is visible
 	 *
 	 * @return true if window is visible
 	 */
-	inline bool Visible() { return visible; }
+	inline bool Visible() const { return visible; }
 
 	/**
 	 * Resize
@@ -163,10 +197,9 @@ public:
 	 * Paint onto the given curses window
 	 *
 	 * @param win the curses window
-	 * @param row the row
-	 * @param col the column
+	 * @param tcwPrev the previous terminal control window (to draw a difference)
 	 */
-	void Paint(WINDOW* win, int row = 0, int col = 0);
+	void Paint(WINDOW* win, TerminalControlWindow* tcwPrev = NULL);
 
 	/**
 	 * Clear
@@ -291,6 +324,17 @@ public:
 	 * @return the number of characters written
 	 */
 	int PutText(const char* str);
+
+protected:
+
+	/**
+	 * Get a writable reference to the given character
+	 *
+	 * @param row the row
+	 * @param col the column
+	 * @return the character reference
+	 */
+	Character& At(int row, int col);
 };
 
 

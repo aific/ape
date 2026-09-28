@@ -3,21 +3,21 @@
  *
  * Copyright (c) 2015, Peter Macko
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice, 
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
  * this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the copyright holder nor the names of its
  * contributors may be used to endorse or promote products derived from this
  * software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -80,7 +80,7 @@ Manager::Manager(void)
 	lastMouseY = -1;
 	lastMouseState = 0;
 	lastEffectiveMouseState = 0;
-	
+
 	bzero(mousePressInfo, sizeof(mousePressInfo));
 }
 
@@ -104,13 +104,13 @@ void Manager::Initialize(void)
 
 
 	// Configure the Curses
-	
+
 	if (getenv("ESCDELAY") == NULL) {
 		// Set the delay after ESC to 25ms (this is apparently the VIM default)
 		setenv("ESCDELAY", "25", 1);
 	}
 
-	
+
 	// Initialize the Curses
 
 	initscr();
@@ -133,7 +133,7 @@ void Manager::Initialize(void)
 
 
 	// Initialize mouse
-	
+
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 	mouseinterval(0 /* ms */);
 	printf("\033[?1002h\033[?1006h");  // Configure the terminal to report mouse movements
@@ -159,6 +159,7 @@ void Manager::Initialize(void)
 
 	win = newwin(rows, cols, 0, 0);
 	tcw = new TerminalControlWindow(rows, cols);
+	tcwLast = new TerminalControlWindow(0, 0);
 
 
 	// Initialize signals
@@ -187,6 +188,7 @@ void Manager::Shutdown(void)
 	for (int i = 0; i < zombies.size(); i++) delete zombies[i];
 
 	delete tcw;
+	delete tcwLast;
 	delwin(win);
 
 	printf("\033[?1006l\033[?1002l");  // Configure the terminal to stop reporting mouse movements
@@ -220,7 +222,7 @@ void Manager::PaintStatus(void)
 	tcw->SetColor(7, 7);
 	tcw->SetAttribute(A_DIM, true);
 	tcw->OutHorizontalLine(rows - 1, 0, cols, ' ');
-	
+
 	tcw->OutText(rows - 1, 1, status.c_str());
 }
 
@@ -359,7 +361,7 @@ Window* Manager::WindowAt(int row, int column)
 			}
 		}
 	}
-	
+
 	return NULL;
 }
 
@@ -454,9 +456,9 @@ void Manager::Refresh(void)
 
 
 	// Paint
-	
+
 	Paint();
-	tcw->Paint(win);
+	tcw->Paint(win, tcwLast);
 	wrefresh(win);
 
 
@@ -783,12 +785,12 @@ void Manager::ProcessMessages(void)
 
 		if (key == KEY_ESC) {
 			key = getch();
-			
+
 			//log(LL_DEBUG, "> %c %d", key, key);
 			//key = getch(); log(LL_DEBUG, "- %c %d", key, key);
 			//key = getch(); log(LL_DEBUG, "- %c %d", key, key);
 			//key = getch(); log(LL_DEBUG, "- %c %d", key, key);continue;
-			
+
 			if (key == ERR) key = KEY_ESC;
 
 			else if (key == 'O') {
@@ -818,7 +820,7 @@ void Manager::ProcessMessages(void)
 				key = getch();
 				if (key == '1') {
 					key = getch();
-					
+
 					switch (key) {
 						case '~': key = KEY_HOME; break;
 					}
@@ -841,7 +843,7 @@ void Manager::ProcessMessages(void)
 						}
 					}
 				}
-			
+
 				else if (key == '4') {
 					key = getch();
 					switch (key) {
@@ -871,10 +873,10 @@ void Manager::ProcessMessages(void)
 			TerminalResized();
 			continue;
 		}
-		
-		
+
+
 		// Handle mouse events
-		
+
 		if (key == KEY_MOUSE) {
 			MEVENT event;
 			bool ok;
@@ -887,32 +889,32 @@ void Manager::ProcessMessages(void)
 				if (!ok) log(LL_WARNING, "Error in getmouse()");
 			}
 			if (ok) {
-				
+
 				Window* window = WindowAt(event.y, event.x);
 				int windowRow = event.y;
 				int windowColumn = event.x;
-				
+
 				Component* component = NULL;
 				int row = event.y;
 				int column = event.x;
-				
+
 				if (window != NULL) {
-					
+
 					windowRow = event.y - window->Row();
 					windowColumn = event.x - window->Column();
 					component = window->ComponentAtRecursive(windowRow, windowColumn);
-					
+
 					if (component == NULL) {
 						component = window;
 					}
-					
+
 					row = event.y - component->ScreenRow();
 					column = event.x - component->ScreenColumn();
 				}
-				
-				
+
+
 				// Update the mouse button states
-				
+
 				// NCurses 6:
 				// Curses does not seem to handle other buttons as well.
 				// Notably, we dont't always get release events especially
@@ -920,12 +922,12 @@ void Manager::ProcessMessages(void)
 				// release events for the mouse wheel (buttons 4 and 5).
 				// However, it seems like we are getting 0x10000000 for drags
 				// (REPORT_MOUSE_POSITION)....
-				
+
 				// NCurses 5:
 				// We don't have button 5. It seems like dragging button 1
 				// sends events for button 4, which doesn't make any sense.
 				// Mouse release events are very unreliable.
-				
+
 				bool previousMouseButtonStates[APE_NUM_MOUSE_BUTTONS];
 				for (int i = 0; i < APE_NUM_MOUSE_BUTTONS; i++) {
 					previousMouseButtonStates[i] = mouseButtonStates[i];
@@ -937,7 +939,7 @@ void Manager::ProcessMessages(void)
 					if ((event.bstate & NCURSES_MOUSE_MASK(i + 1,
 						NCURSES_BUTTON_RELEASED)) != 0) mouseButtonStates[i] = false;
 				}
-				
+
 				if (mouseButtonStates[0]) {
 					mouseButtonStates[3] = false;
 					mouseButtonStates[4] = false;
@@ -945,7 +947,7 @@ void Manager::ProcessMessages(void)
 						mouseButtonStates[0] = false;
 					}
 				}
-				
+
 				if (lastMouseX == event.x && lastMouseY == event.y
 				 && (event.bstate & REPORT_MOUSE_POSITION) != 0) {
 					// This is a release event in ncurses 5
@@ -953,7 +955,7 @@ void Manager::ProcessMessages(void)
 						mouseButtonStates[i] = false;
 					}
 				}
-				
+
 #ifndef BUTTON5_PRESSED
 				// TODO Figure out how to handle the middle button clicks
 				if (lastMouseX == event.x && lastMouseY == event.y
@@ -962,14 +964,14 @@ void Manager::ProcessMessages(void)
 					// This is in fact a mouse wheel event in ncurses 5. Why?!
 					mouseButtonStates[4] = true;
 				}
-				
+
 				if ((event.bstate & BUTTON2_PRESSED) != 0) {
 					// This is in fact a mouse wheel event in ncurses 5. Why?!
 					mouseButtonStates[1] = false;
 					mouseButtonStates[4] = true;
 				}
 #endif
-				
+
 				bool buttonPressed = false;
 				bool buttonReleased = false;
 				for (int i = 0; i < APE_NUM_MOUSE_BUTTONS; i++) {
@@ -982,7 +984,7 @@ void Manager::ProcessMessages(void)
 						}
 					}
 				}
-				
+
 				if (buttonReleased && !buttonPressed) {
 					// We may not get release events for all buttons, so let's
 					// proactively turn them off.
@@ -990,14 +992,14 @@ void Manager::ProcessMessages(void)
 						mouseButtonStates[i] = false;
 					}
 				}
-				
+
 				bool mouseMoved = lastMouseX != event.x || lastMouseY != event.y;
-				
+
 				lastMouseX = event.x;
 				lastMouseY = event.y;
 				lastMouseState = event.bstate;
 				lastEffectiveMouseState = event.bstate;
-				
+
 #ifndef BUTTON5_PRESSED
 				if (mouseButtonStates[4]) {
 					lastEffectiveMouseState |= BUTTON2_PRESSED;
@@ -1009,10 +1011,10 @@ void Manager::ProcessMessages(void)
 				mouseButtonStates[0], mouseButtonStates[1],
 				mouseButtonStates[2], mouseButtonStates[3], mouseButtonStates[4],
 				event.x, event.y, event.z);*/
-				
-				
+
+
 				// Raise the window on button activity
-				
+
 				if ((event.bstate & REPORT_MOUSE_POSITION) == 0
 					&& window != NULL
 					&& ((mouseButtonStates[0] && !previousMouseButtonStates[0])
@@ -1030,14 +1032,14 @@ void Manager::ProcessMessages(void)
 						component->Focus();
 					}
 				}
-				
-				
+
+
 				// Record the press
-				
+
 				bool shift = (event.bstate & BUTTON_SHIFT) != 0;
 				double time = Time();
 				bool move = mouseMoved;
-				
+
 				for (int i = 0; i < 3; i++) {
 					if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {
 						if (mousePressInfo[i].active
@@ -1066,10 +1068,10 @@ void Manager::ProcessMessages(void)
 						}
 					}
 				}
-				
-				
+
+
 				// Pass event to the window (click-through)
-				
+
 				if (component != NULL) {
 					for (int i = 0; i < 3; i++) {
 						if (mouseButtonStates[i] && !previousMouseButtonStates[i]) {
@@ -1077,7 +1079,7 @@ void Manager::ProcessMessages(void)
 						}
 					}
 				}
-				
+
 				for (int i = 0; i < 3; i++) {
 					if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
 						if (mousePressInfo[i].active && mousePressInfo[i].component != NULL) {
@@ -1085,7 +1087,7 @@ void Manager::ProcessMessages(void)
 						}
 					}
 				}
-				
+
 				if (component != NULL) {
 					for (int i = 0; i < 3; i++) {
 						if (!mouseButtonStates[i] && previousMouseButtonStates[i]) {
@@ -1111,7 +1113,7 @@ void Manager::ProcessMessages(void)
 						}
 					}
 				}
-				
+
 				for (int i = 0; i < 3; i++) {
 					if (mouseButtonStates[i] && previousMouseButtonStates[i]) {
 						if (move) {
@@ -1151,23 +1153,23 @@ void Manager::ProcessMessages(void)
 						mousePressInfo[i].drag = false;
 					}
 				}
-				
+
 				if (component != NULL) {
 					if (mouseButtonStates[3] || mouseButtonStates[4]) {
 						int wheel = mouseButtonStates[3] ? -1 : 1;
 						component->OnMouseWheel(row, column, wheel);
 					}
 				}
-				
-				
+
+
 				// Clear the mouse wheel events
-				
+
 				mouseButtonStates[3] = false;
 				mouseButtonStates[4] = false;
-				
-				
+
+
 				// Get ready for the next iteration
-				
+
 				for (int i = 0; i < 3; i++) {
 					if (mousePressInfo[i].active) {
 						mousePressInfo[i].lastScreenRow = event.y;
@@ -1253,10 +1255,10 @@ void Manager::ProcessMessages(void)
 			if (Top() != NULL) {
 				Top()->OnKeyPressed(key);
 			}
-			
-			
+
+
 			// Refresh
-			
+
 			Refresh();
 		}
 	}
@@ -1270,7 +1272,7 @@ void Manager::ProcessMessages(void)
 
 
 	// Finish
-	
+
 	processMessagesDepth--;
 }
 
