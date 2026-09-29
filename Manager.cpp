@@ -71,6 +71,9 @@ Manager::Manager(void)
 	processMessagesDepth = 0;
 	openDialog = NULL;
 
+	tcw = NULL;
+	tcwLast = NULL;
+
 	clipboard = "";
 
 	for (int i = 0; i < APE_NUM_MOUSE_BUTTONS; i++) {
@@ -123,8 +126,10 @@ void Manager::Initialize(void)
 	keypad(stdscr, TRUE);
 	nodelay(stdscr, TRUE);
 
+
 	// Make sure flow control is off, so Ctrl-S (XOFF) and Ctrl-Q (XON) are
 	// delivered as key events rather than swallowed by the terminal driver.
+
 	struct termios t;
 	if (tcgetattr(STDIN_FILENO, &t) == 0) {
 		t.c_iflag &= ~(IXON | IXOFF | IXANY);
@@ -448,6 +453,7 @@ void Manager::Refresh(void)
 	// Check whether the terminal has a valid size
 
 	if (!validsize) {
+		Paint();
 		wrefresh(win);
 		move(rows - 1, cols - 1);
 		curs_set(FALSE);
@@ -458,7 +464,7 @@ void Manager::Refresh(void)
 	// Paint
 
 	Paint();
-	tcw->Paint(win, tcwLast);
+	tcw->Paint(win, NULL); // XXX tcwLast);
 	wrefresh(win);
 
 
@@ -606,7 +612,9 @@ void Manager::TerminalResized(void)
 
 	// Resize the terminal
 
-	resizeterm(rows, cols);
+	if (rows != o_rows || cols != o_cols) {
+		resizeterm(rows, cols);
+	}
 
 
 	// Calculate the deltas
@@ -617,7 +625,9 @@ void Manager::TerminalResized(void)
 
 	// Resize the main window
 
-	wresize(win, rows, cols);
+	if (rows != o_rows || cols != o_cols) {
+		wresize(win, rows, cols);
+	}
 	tcw->Resize(rows, cols);
 
 
@@ -643,12 +653,12 @@ void Manager::TerminalResized(void)
 
 	if (rows < mr || cols < mc) {
 		validsize = false;
-		Paint();
+		tcwLast->Resize(0, 0); // Force full repaint
 		Refresh();
+		return;
 	}
-	else {
-		validsize = true;
-	}
+
+	validsize = true;
 
 
 	// Resize or move the other windows
@@ -658,7 +668,6 @@ void Manager::TerminalResized(void)
 
 	// Repaint
 
-	Paint();
 	Refresh();
 }
 
@@ -1287,7 +1296,3 @@ void Manager::SetStatus(const char* s)
 	status = s;
 	PaintStatus();
 }
-
-
-
-

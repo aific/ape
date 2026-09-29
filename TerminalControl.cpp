@@ -132,7 +132,7 @@ TerminalControlWindow::~TerminalControlWindow()
  */
 void TerminalControlWindow::Resize(int rows, int cols)
 {
-	assert(rows > 0 && cols > 0);
+	assert(rows >= 0 && cols >= 0);
 
 	if (rows < (int) lines.size()) {
 		for (size_t r = rows; r < lines.size(); r++) {
@@ -164,8 +164,10 @@ void TerminalControlWindow::Paint(WINDOW* win, TerminalControlWindow* tcwPrev)
 
 	bool doDiff = false;
 	if (tcwPrev != NULL) {
-		doDiff = Rows() != tcwPrev->Rows() || Columns() != tcwPrev->Columns();
-		if (doDiff) {
+		if (Rows() == tcwPrev->Rows() && Columns() == tcwPrev->Columns()) {
+			doDiff = true;
+		}
+		else {
 			tcwPrev->Resize(Rows(), Columns());
 		}
 	}
