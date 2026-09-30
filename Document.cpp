@@ -36,6 +36,9 @@
 #include "Document.h"
 
 #include <unistd.h>
+#include <cstdlib>
+#include <vector>
+#include <sys/stat.h>
 
 
 /**
@@ -250,33 +253,65 @@ ReturnExt EditorDocument::SaveToFile(const char* file, bool switchFile)
 {
 	// Open the temporary file
 	
-	char tmp[L_tmpnam];
-	if (tmpnam(tmp) == NULL) {
-		return ReturnExt(false, "Cannot generate a name for a new "
-				"temporary file", errno);
+	// Create it in the same directory as the target, so that the final
+	// rename() does not cross file systems
+
+	std::string tmpStr = file;
+	std::string::size_type slash = tmpStr.rfind('/');
+	std::string dir = slash == std::string::npos ? "" : tmpStr.substr(0, slash + 1);
+	std::string base = slash == std::string::npos ? tmpStr : tmpStr.substr(slash + 1);
+	tmpStr = dir + "." + base + ".XXXXXX";
+
+	std::vector<char> tmp(tmpStr.begin(), tmpStr.end());
+	tmp.push_back('\0');
+
+	int fd = mkstemp(&tmp[0]);
+	if (fd < 0) {
+		return ReturnExt(false, "Cannot create a temporary file", errno);
 	}
 
-	FILE* f = fopen(tmp, "wt");
+	// Preserve the permissions of an existing file (mkstemp uses 0600)
+
+	struct stat st;
+	if (stat(file, &st) == 0) {
+		fchmod(fd, st.st_mode & 07777);
+	}
+	else {
+		mode_t mask = umask(0);
+		umask(mask);
+		fchmod(fd, 0666 & ~mask);
+	}
+
+	FILE* f = fdopen(fd, "wt");
 	if (f == NULL) {
-		return ReturnExt(false, "Error while saving", errno);
+		int e = errno;
+		close(fd);
+		unlink(&tmp[0]);
+		return ReturnExt(false, "Error while saving", e);
 	}
 
 	int numLines = NumLines();
 	for (int i = 0; i < numLines; i++) {
 		const char* l = lines[i].Text().c_str();
 		if (fputs(l, f) == EOF) {
+			int e = errno;
 			fclose(f);
-			unlink(tmp);
-			return ReturnExt(false, "Error while writing", errno);
+			unlink(&tmp[0]);
+			return ReturnExt(false, "Error while writing", e);
 		}
 		if (i + 1 < numLines) fputc('\n', f);
 	}
 
-	fclose(f);
+	if (fclose(f) != 0) {
+		int e = errno;
+		unlink(&tmp[0]);
+		return ReturnExt(false, "Error while writing", e);
+	}
 
-	if (rename(tmp, file) != 0) {
-		unlink(tmp);
-		return ReturnExt(false, "Error while saving", errno);
+	if (rename(&tmp[0], file) != 0) {
+		int e = errno;
+		unlink(&tmp[0]);
+		return ReturnExt(false, "Error while saving", e);
 	}
 
 
@@ -330,8 +365,7 @@ ReturnExt EditorDocument::Save(void)
 		return ReturnExt(false, "There is no associated file name");
 	}
 
-	SaveToFile(fileName.c_str(), true);
-	return ReturnExt(true);
+	return SaveToFile(fileName.c_str(), true);
 }
 
 
