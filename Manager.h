@@ -224,6 +224,14 @@ public:
 	void CloseTopMenu(int code = -1);
 
 	/**
+	 * Invalidate the screen buffer to force a full repaint on next refresh
+	 */
+	inline void Invalidate(void)
+	{
+		tcwLast->Resize(0, 0);
+	}
+
+	/**
 	 * Repaint the screen
 	 */
 	void Refresh(void);

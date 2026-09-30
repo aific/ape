@@ -464,7 +464,7 @@ void Manager::Refresh(void)
 	// Paint
 
 	Paint();
-	tcw->Paint(win, NULL); // XXX tcwLast);
+	tcw->Paint(win, tcwLast);
 	wrefresh(win);
 
 
@@ -653,7 +653,7 @@ void Manager::TerminalResized(void)
 
 	if (rows < mr || cols < mc) {
 		validsize = false;
-		tcwLast->Resize(0, 0); // Force full repaint
+		Invalidate();
 		Refresh();
 		return;
 	}
@@ -668,6 +668,7 @@ void Manager::TerminalResized(void)
 
 	// Repaint
 
+	Invalidate();
 	Refresh();
 }
 

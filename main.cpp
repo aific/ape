@@ -169,6 +169,7 @@ int main(int argc, char * const argv[])
 	// Main loop
 
 	while (getch() != ERR);
+	wm.Invalidate();
 	wm.Refresh();
 
 	for (;;) {
