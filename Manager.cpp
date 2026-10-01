@@ -552,6 +552,7 @@ void Manager::EnsureValidWindowArea(Window* w)
 
 	if (w->Maximized()) {
 		w->Resize(rows - 2, cols);
+		w->Maximize();
 		return;
 	}
 
