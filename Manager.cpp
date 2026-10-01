@@ -46,6 +46,7 @@
 #include "DialogWindow.h"
 #include "EditorWindow.h"
 #include "FileDialog.h"
+#include "Terminal.h"
 
 Manager wm;
 
@@ -118,6 +119,7 @@ void Manager::Initialize(void)
 
 	initscr();
 	noecho();
+	Terminal::DisableScrolling();
 
 
 	// Initialize keyboard
@@ -464,8 +466,11 @@ void Manager::Refresh(void)
 	// Paint
 
 	Paint();
+
+	Terminal::SynchronizeOutputStart();
 	tcw->Paint(win, tcwLast);
 	wrefresh(win);
+	Terminal::SynchronizeOutputStop();
 
 
 	// Update the cursor location
