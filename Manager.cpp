@@ -1250,9 +1250,9 @@ void Manager::ProcessMessages(void)
 					FileDialog* d = new FileDialog(NULL, FILE_DIALOG_OPEN, "Open");
 					openDialog = d;
 					if (d->Run()) {
-						// TODO Window placement
 						EditorWindow* w = new EditorWindow(1, 1, 20, 64);
 						ReturnExt r = w->LoadFromFile(d->Path().c_str());
+						w->Maximize();
 						if (!r) {
 							w->Close();
 							Dialogs::Error(NULL, r);
