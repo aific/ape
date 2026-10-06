@@ -319,6 +319,7 @@ ReturnExt EditorDocument::SaveToFile(const char* file, bool switchFile)
 	
 	if (switchFile) {
 		fileName = file;
+		FinalizeEditAction();
 
 		if (modified) {
 			modified = false;
@@ -344,9 +345,6 @@ ReturnExt EditorDocument::SaveToFile(const char* file, bool switchFile)
 			if (!redo.empty()) {
 				redo.back()->modified = false;
 			}
-			
-			if (currentUndo != NULL) delete currentUndo;
-			currentUndo = NULL;
 		}
 	}
 
@@ -497,6 +495,8 @@ void EditorDocument::Append(const char* line)
 	lines.push_back(std::move(l));
 	
 	modified = true;
+	
+	currentUndo->Add(new EA_InsertLine((int) lines.size() - 1, line));
 }
 
 
@@ -581,9 +581,9 @@ void EditorDocument::InsertCharToLine(int line, char ch, int pos)
  */
 void EditorDocument::DeleteCharFromLine(int line, int pos)
 {
-	PrepareEdit();
 	DocumentLine& l = lines[line];
 	if (l.Text().length() == 0) return;
+	PrepareEdit();
 	displayLengths.Decrement(l.DisplayLength());
 
 	if (pos >= l.Text().length()) pos = l.Text().length() - 1;
@@ -708,6 +708,10 @@ void EditorDocument::InsertString(int line, int pos, const char* str)
 {
 	PrepareEdit();
 	
+	int length = (int) lines[line].Text().length();
+	if (pos < 0) pos = 0;
+	if (pos > length) pos = length;
+	
 	InsertStringEx(line, pos, str);
 	
 	modified = true;
@@ -758,7 +762,6 @@ void EditorDocument::DeleteStringEx(int line, int pos, int toline, int topos)
 		// Get the last line
 		
 		DocumentLine& ll = lines[toline];
-		displayLengths.Decrement(ll.DisplayLength());
 		
 		if (topos >= ll.Text().length()) topos = ll.Text().length();
 		if (topos < 0) topos = 0;
@@ -780,7 +783,7 @@ void EditorDocument::DeleteStringEx(int line, int pos, int toline, int topos)
 		// Delete the other lines
 		
 		for (int i = line; i < toline; i++) {
-			DocumentLine& nl = lines[line];
+			DocumentLine& nl = lines[line + 1];
 			displayLengths.Decrement(nl.DisplayLength());
 			lines.erase(lines.begin() + line + 1);
 		}
@@ -808,9 +811,10 @@ void EditorDocument::DeleteString(int line, int pos, int toline, int topos)
 	}
 	
 	
-	PrepareEdit();
-	
 	std::string str = Get(line, pos, toline, topos);
+	if (str.empty()) return;
+	
+	PrepareEdit();
 	
 	DeleteStringEx(line, pos, toline, topos);
 	
@@ -903,6 +907,10 @@ UndoEntry::UndoEntry(EditorDocument* _document, int _cursorRow, int _cursorColum
 	cursorRow = _cursorRow;
 	cursorColumn = _cursorColumn;
 	modified = _modified;
+	
+	redo_cursorRow = _cursorRow;
+	redo_cursorColumn = _cursorColumn;
+	redo_modified = _modified;
 }
 
 
@@ -957,11 +965,11 @@ void UndoEntry::Redo(void)
  */
 void EditorDocument::Undo(void)
 {
-	if (currentUndo == NULL) {
-		if (undo.empty()) return;
-		currentUndo = undo.back();
-		undo.pop_back();
-	}
+	FinalizeEditAction();
+	if (undo.empty()) return;
+	
+	currentUndo = undo.back();
+	undo.pop_back();
 	
 	currentUndo->Undo();
 	

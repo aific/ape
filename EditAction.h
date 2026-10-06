@@ -80,6 +80,9 @@ protected:
 	 */
 	EditAction(EditActionType actionType);
 	
+	EditAction(const EditAction&) = delete;
+	EditAction& operator=(const EditAction&) = delete;
+	
 	/**
 	 * Return a line from a document
 	 * 

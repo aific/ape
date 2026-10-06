@@ -207,6 +207,9 @@ class UndoEntry
 	int redo_cursorColumn;
 	bool redo_modified;
 	
+	UndoEntry(const UndoEntry&) = delete;
+	UndoEntry& operator=(const UndoEntry&) = delete;
+	
 	
 public:
 	
