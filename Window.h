@@ -127,6 +127,13 @@ protected:
 	virtual void Center(void);
 
 	/**
+	 * Confirm close
+	 *
+	 * @return true if it is okay to close the window
+	 */
+	 virtual bool OnConfirmClose(void);
+
+	/**
 	 * An event handler for pressing a key
 	 *
 	 * @param key the key code
@@ -252,8 +259,11 @@ public:
 
 	/**
 	 * Close the window
+	 *
+	 * @param force whether to force closing the window (skip any confirmations)
+	 * @return true if the window was actually closed
 	 */
-	void Close(void);
+	bool Close(bool force = false);
 
 	/**
 	 * Maximize the window

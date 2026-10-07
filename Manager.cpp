@@ -1206,9 +1206,24 @@ void Manager::ProcessMessages(void)
 				if (key == KEY_CTRL('c') || key == KEY_CTRL('q') || key == KEY_ESC) std::exit(1);
 			}
 
-			if (key == KEY_CTRL('q')) std::exit(0);
+			if (key == KEY_CTRL('q')) {
+				bool quit = true;
 
-			if (key == KEY_F(2) || key == KEY_CTRL('w')) {
+				// Close all windows, asking for confirmations if need be
+				while (Top() != NULL) {
+					if (!Top()->Close()) {
+						quit = false;
+						break;
+					}
+				}
+
+				// Quit
+				if (quit) {
+					std::exit(0);
+				}
+			}
+
+			if (key == KEY_F(2) || key == KEY_CTRL('p')) {
 				Window* w = Top();
 				if (w != NULL && w->Regular()) {
 					if (windowSwitcher == NULL) {

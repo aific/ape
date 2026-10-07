@@ -121,7 +121,7 @@ void DialogWindow::OnKeyPressed(int key)
 
 
 /**
- * Create an instance of class SimpleDialogWindow
+ * Create an instance of class SimpleDialogWindow with OK button
  *
  * @param parent the parent window
  * @param type the dialog type
@@ -134,6 +134,24 @@ SimpleDialogWindow::SimpleDialogWindow(Window* parent, DialogType type,
 {
 	std::vector<DialogButton> buttons;
 	buttons.push_back(DIALOG_BUTTON_OK);
+	Init(type, title, text, buttons);
+}
+
+
+/**
+ * Create an instance of class SimpleDialogWindow
+ *
+ * @param parent the parent window
+ * @param type the dialog type
+ * @param title the title
+ * @param text the text
+ * @param buttons the buttons
+ */
+SimpleDialogWindow::SimpleDialogWindow(Window* parent, DialogType type,
+		const char* title, const char* text,
+		const std::vector<DialogButton>& buttons)
+	: DialogWindow(parent, title)
+{
 	Init(type, title, text, buttons);
 }
 
@@ -242,9 +260,11 @@ void SimpleDialogWindow::Init(DialogType type, const char* title,
 const char* SimpleDialogWindow::ButtonText(DialogButton button)
 {
 	switch (button) {
-		case DIALOG_BUTTON_OK     : return "OK";
-		case DIALOG_BUTTON_CANCEL : return "Cancel";
-		default                   : return "???";
+		case DIALOG_BUTTON_OK        : return "OK";
+		case DIALOG_BUTTON_CANCEL    : return "Cancel";
+		case DIALOG_BUTTON_SAVE      : return "Save";
+		case DIALOG_BUTTON_DONT_SAVE : return "Don't Save";
+		default                      : return "???";
 	}
 }
 

@@ -198,10 +198,19 @@ void Window::Raise(void)
 
 /**
  * Close the window
+ *
+ * @param force whether to force closing the window (skip any confirmations)
+ * @return true if the window was actually closed
  */
-void Window::Close(void)
+bool Window::Close(bool force)
 {
+	if (!force) {
+		if (!OnConfirmClose())
+			return false;
+	}
+
 	wm.Close(this);
+	return true;
 }
 
 
@@ -280,6 +289,17 @@ void Window::EnsureWindowMenu(void)
 	if (allowMove || allowResize || allowMaximize) windowMenu->AddSeparator();
 	windowMenu->Add("Close", 0, WCM_CLOSE);
 	windowMenu->UpdateMenu();
+}
+
+
+/**
+ * Confirm close
+ *
+ * @return true if it is okay to close the window
+ */
+bool Window::OnConfirmClose(void)
+{
+	return true;
 }
 
 

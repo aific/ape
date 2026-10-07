@@ -75,6 +75,20 @@ protected:
 	void PaintEditorStatus(void);
 
 	/**
+	 * Save the document
+	 *
+	 * @return true on success
+	 */
+	bool Save(void);
+
+	/**
+	 * Confirm close
+	 *
+	 * @return true if it is okay to close the window
+	 */
+	 virtual bool OnConfirmClose(void);
+
+	/**
 	 * An event handler for pressing a key
 	 *
 	 * @param key the key code

@@ -60,6 +60,8 @@ enum DialogButton
 {
 	DIALOG_BUTTON_OK,
 	DIALOG_BUTTON_CANCEL,
+	DIALOG_BUTTON_SAVE,
+	DIALOG_BUTTON_DONT_SAVE,
 };
 
 
@@ -152,7 +154,7 @@ class SimpleDialogWindow : public DialogWindow, protected EventHandler
 public:
 	
 	/**
-	 * Create an instance of class SimpleDialogWindow
+	 * Create an instance of class SimpleDialogWindow with OK button
 	 *
 	 * @param parent the parent window
 	 * @param type the dialog type
@@ -161,6 +163,19 @@ public:
 	 */
 	SimpleDialogWindow(Window* parent, DialogType type,
 			const char* title, const char* text);
+	
+	/**
+	 * Create an instance of class SimpleDialogWindow
+	 *
+	 * @param parent the parent window
+	 * @param type the dialog type
+	 * @param title the title
+	 * @param text the text
+	 * @param buttons the buttons
+	 */
+	SimpleDialogWindow(Window* parent, DialogType type,
+			const char* title, const char* text,
+			const std::vector<DialogButton>& buttons);
 
 	/**
 	 * Destroy the object
@@ -253,6 +268,26 @@ public:
 		SimpleDialogWindow* w = new SimpleDialogWindow(parent,
 				DIALOG_TYPE_ERROR, title, s.c_str());
 		w->Run();
+	}
+
+	/**
+	 * A simple save confirmation dialog
+	 *
+	 * @param parent the parent window
+	 * @param text the text
+	 * @param title the title
+	 * @return the clicked button
+	 */
+	static DialogButton SaveConfirmation(Window* parent, const char* text,
+			const char* title="Unsaved Changes")
+	{
+		std::vector<DialogButton> buttons;
+		buttons.push_back(DIALOG_BUTTON_SAVE);
+		buttons.push_back(DIALOG_BUTTON_DONT_SAVE);
+		buttons.push_back(DIALOG_BUTTON_CANCEL);
+		SimpleDialogWindow* w = new SimpleDialogWindow(parent,
+				DIALOG_TYPE_NORMAL, title, text, buttons);
+		return w->Run();
 	}
 };
 

@@ -191,6 +191,54 @@ void EditorWindow::PaintEditorStatus(void)
 
 
 /**
+ * Save the document
+ *
+ * @return true on success
+ */
+bool EditorWindow::Save(void)
+{
+	if (editor->Document()->FileName() == NULL) {
+		// XXX
+		ReturnExt r = editor->Document()->Save();
+		Dialogs::Error(this, r.Message());
+	}
+	else {
+		ReturnExt r = editor->Document()->Save();
+		if (!r) {
+			Dialogs::Error(this, r.Message());
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+/**
+ * Confirm close
+ *
+ * @return true if it is okay to close the window
+ */
+bool EditorWindow::OnConfirmClose(void)
+{
+	if (editor->Document()->Modified()) {
+		DialogButton r = Dialogs::SaveConfirmation(this, "Would you like to save your changes?");
+		switch (r) {
+		case DIALOG_BUTTON_SAVE:
+			return Save();
+		case DIALOG_BUTTON_DONT_SAVE:
+			return true;
+		case DIALOG_BUTTON_CANCEL:
+		default:
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+
+/**
  * An event handler for pressing a key
  *
  * @param key the key code
@@ -243,16 +291,11 @@ void EditorWindow::OnKeyPressed(int key)
 	}
 
 	else if (key == KEY_CTRL('s')) {
+		Save();
+	}
 
-		if (editor->Document()->FileName() == NULL) {
-			// XXX
-			ReturnExt r = editor->Document()->Save();
-			Dialogs::Error(this, r.Message());
-		}
-		else {
-			ReturnExt r = editor->Document()->Save();
-			if (!r) Dialogs::Error(this, r.Message());
-		}
+	else if (key == KEY_CTRL('w')) {
+		Close();
 	}
 
 	else {
